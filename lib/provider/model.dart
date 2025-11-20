@@ -1,4 +1,3 @@
-// 推荐 Model：将经纬度存储为 double 类型
 class GeocodeItem {
   final String formattedAddress;
   final double latitude;
@@ -19,4 +18,28 @@ class GeocodeItem {
       longitude: double.tryParse(map['longitude'] as String) ?? 0.0,
     );
   }
+}
+
+class Time {
+  final int year;
+  final int month;
+  final int day;
+  final int hour;
+  final int minute;
+  final int second;
+  final int millisecond;
+  final String weekday;
+  final String miniMonth;
+
+  Time({
+    required this.year,
+    required this.month,
+    required this.day,
+    required this.hour,
+    required this.minute,
+    required this.second,
+    required this.millisecond,
+    required this.weekday,
+    required this.miniMonth,
+  });
 }

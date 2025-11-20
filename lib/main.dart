@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.blue,
+        primaryColor: Color.fromARGB(255, 145, 185, 239),
         colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.white),
       ),
       home: ChangeNotifierProvider(

@@ -4,10 +4,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import '../provider/weather_provider.dart';
 import '../helper/index.dart';
+import '../helper/extensions.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import '../provider/model.dart';
+import '../provider/weather.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -22,6 +25,9 @@ class _Homescreen extends State<Homescreen> {
   List<dynamic> inputHistory = [];
   List<GeocodeItem> cityList = [];
   String currentInput = '';
+  Weather? weather;
+  bool weatherReady = false;
+  bool isCelsius = false;
 
   @override
   void initState() {
@@ -39,7 +45,6 @@ class _Homescreen extends State<Homescreen> {
       setState(() {
         inputHistory = parsedList;
       });
-      // console(parsedList);
     } on FileSystemException {
       return 0;
     }
@@ -50,22 +55,13 @@ class _Homescreen extends State<Homescreen> {
     return File('$dir/inputHistory.txt');
   }
 
-  handleReqLocation() async {
-    // WeatherModel provider = Provider.of<WeatherModel>(context, listen: false);
-    // Response res = await provider.locationToLatLng(currentInput);
-    // console(res.data['geocodes']);
+  handleReqLocation(GeocodeItem item) async {
+    WeatherModel provider = Provider.of<WeatherModel>(context, listen: false);
 
-    // List<String> location = res.data['geocodes'][0]['location'].split(',');
-    // Response data = await dio.get(
-    //   "https://api.openweathermap.org/data/2.5/weather",
-    //   queryParameters: {
-    //     "lat": location[1],
-    //     "lon": location[0],
-    //     "units": 'metric',
-    //     "appid": provider.weatherKey,
-    //   },
-    // );
-    // console(data);
+    weather = await provider.getWeatherData(item);
+    setState(() {
+      weather = weather;
+    });
   }
 
   handleSubmit(String value) async {
@@ -73,8 +69,6 @@ class _Homescreen extends State<Homescreen> {
     getLocalFile().then((e) {
       e.writeAsString(jsonEncode(inputHistory));
     });
-    handleReqLocation();
-    // Navigator.of(context).pop();
   }
 
   searchDialog() {
@@ -98,7 +92,10 @@ class _Homescreen extends State<Homescreen> {
         scrollDirection: Axis.vertical,
         children: cityList.map((item) {
           return GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pop();
+              handleReqLocation(item);
+            },
             child: Container(
               height: 50,
               padding: padding,
@@ -163,7 +160,6 @@ class _Homescreen extends State<Homescreen> {
         currentInput = value;
         cityList = geocodeItems;
       });
-      console(currentInput);
     }
 
     inputComponent(StateSetter dialogSetState) {
@@ -180,7 +176,6 @@ class _Homescreen extends State<Homescreen> {
             Expanded(
               child: Material(
                 child: TextField(
-                  onSubmitted: handleSubmit,
                   onChanged: (e) {
                     handleInput(e, dialogSetState);
                   },
@@ -194,7 +189,7 @@ class _Homescreen extends State<Homescreen> {
                 ),
               ),
             ),
-            Icon(CupertinoIcons.search, color: mainColor),
+            Icon(CupertinoIcons.multiply, color: mainColor),
           ],
         ),
       );
@@ -258,6 +253,249 @@ class _Homescreen extends State<Homescreen> {
     );
   }
 
+  showSwitch(bool action) {
+    setState(() {
+      isCelsius = action;
+    });
+  }
+
+  location() {
+    Time time = getTime();
+    Color mainColor = Theme.of(context).primaryColor;
+    if (weather == null) {
+      return Container();
+    }
+    return Container(
+      color: Colors.transparent,
+      margin: EdgeInsets.only(top: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                weather!.city,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                '${time.weekday} ${time.miniMonth}, ${time.day} ${time.year}  ${time.hour}:${time.minute} ${time.hour <= 12 ? 'AM' : 'PM'}',
+              ),
+            ],
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 238, 238, 238),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            width: 100,
+            height: 40,
+            child: Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: Duration(milliseconds: 100),
+                  top: 4,
+                  left: isCelsius ? 4 : 52,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: mainColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    width: 45,
+                    height: 32,
+                  ),
+                ),
+
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        showSwitch(true);
+                      },
+                      child: Container(
+                        width: 50,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Text(
+                            '℃',
+                            style: TextStyle(
+                              color: isCelsius ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        showSwitch(false);
+                      },
+                      child: Container(
+                        width: 50,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Text(
+                            '℉',
+                            style: TextStyle(
+                              color: isCelsius ? Colors.black : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  renderTemp() {
+    if (weather == null) return Container();
+    String temp = isCelsius
+        ? weather!.temp.toStringAsFixed(1)
+        : weather!.temp.toFahrenheit().toStringAsFixed(1);
+
+    tempComponent() {
+      return Container(
+        color: Colors.white,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              children: [
+                Text(
+                  temp,
+                  style: TextStyle(
+                    height: 1,
+                    fontSize: 60,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(weather!.description),
+              ],
+            ),
+            Container(
+              margin: EdgeInsets.fromLTRB(4, 0, 0, 0),
+              color: Colors.transparent,
+              child: Text(
+                isCelsius ? '℃' : '℉',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    renderWeatherImage() {
+      return SizedBox(
+        height: 100.0,
+        width: 100.0,
+        child: Image.asset(
+          getWeatherImage(weather!.weatherCategory),
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    return Container(
+      color: Colors.transparent,
+      margin: EdgeInsets.only(top: 30),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [tempComponent(), renderWeatherImage()],
+      ),
+    );
+  }
+
+  todayDetail() {
+    if (weather == null) return Container();
+    Color mainColor = Theme.of(context).primaryColor;
+    itemComponent(
+      String title, [
+      String subTitle = 'subTitle',
+      PhosphorFlatIconData icon = PhosphorIconsRegular.thermometerSimple,
+    ]) {
+      return Container(
+        width: 120,
+        color: Colors.transparent,
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              margin: EdgeInsets.only(right: 6),
+              decoration: BoxDecoration(
+                color: mainColor,
+                borderRadius: BorderRadius.circular(60),
+              ),
+              child: PhosphorIcon(icon, color: Colors.white),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontSize: 12)),
+                Text(subTitle, style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      height: 160,
+      margin: EdgeInsets.only(top: 20),
+      padding: EdgeInsets.fromLTRB(6, 0, 6, 0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Color.fromARGB(255, 243, 248, 254),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              itemComponent(
+                'Feels Like',
+                isCelsius
+                    ? '${weather!.feelsLike.toStringAsFixed(1)}°'
+                    : '${weather!.feelsLike.toFahrenheit().toStringAsFixed(1)}°',
+                PhosphorIconsRegular.thermometerSimple,
+              ),
+              itemComponent('Rain', 'Error', PhosphorIconsRegular.drop),
+              itemComponent('UV Index', 'Error', PhosphorIconsRegular.sun),
+            ],
+          ),
+          Container(height: 1, color: mainColor),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              itemComponent(
+                'Wind',
+                '${weather!.windSpeed} m/s',
+                PhosphorIconsRegular.wind,
+              ),
+              itemComponent(
+                'Humidity',
+                '${weather!.humidity}%',
+                PhosphorIconsRegular.dropHalfBottom,
+              ),
+              itemComponent('Cloudiness', 'Error', PhosphorIconsRegular.cloud),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -267,8 +505,17 @@ class _Homescreen extends State<Homescreen> {
           builder: (context, provider, child) {
             return Container(
               color: Colors.transparent,
-              padding: EdgeInsets.all(16),
-              child: Column(children: [searchInput()]),
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  searchInput(),
+                  location(),
+                  renderTemp(),
+                  todayDetail(),
+                ],
+              ),
             );
           },
         ),
