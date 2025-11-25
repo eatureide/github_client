@@ -189,7 +189,12 @@ class _Homescreen extends State<Homescreen> {
                 ),
               ),
             ),
-            Icon(CupertinoIcons.multiply, color: mainColor),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: Icon(CupertinoIcons.multiply, color: mainColor),
+            ),
           ],
         ),
       );
