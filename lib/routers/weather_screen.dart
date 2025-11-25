@@ -186,8 +186,6 @@ class _WeatherScreen extends State<WeatherScreen> {
   }
 
   detailComponent() {
-    final colorScheme = Theme.of(context).colorScheme;
-
     buildDetailCard({required IconData icon, required String title}) {
       return Container(
         width: 186,
