@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/routers/home_screen.dart';
+import 'package:github_clint_app/routers/weather_screen.dart';
+import 'theme.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,22 +16,27 @@ class MyApp extends StatelessWidget {
       title: '简易天气',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'ProductSans',
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo, // 种子颜色，整个 App 的色调将基于此生成
+          seedColor: seedColor,
           brightness: Brightness.light,
         ),
       ),
       darkTheme: ThemeData(
+        fontFamily: 'ProductSans',
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
+          seedColor: seedColor,
           brightness: Brightness.dark,
         ),
       ),
-      themeMode: ThemeMode.system, // 跟随系统
-      initialRoute: '/',
-      routes: {'/': (context) => HomeScreen()},
+      themeMode: ThemeMode.light, // 跟随系统
+      initialRoute: '/weather',
+      routes: {
+        '/': (context) => HomeScreen(),
+        '/weather': (context) => WeatherScreen(),
+      },
     );
   }
 }
