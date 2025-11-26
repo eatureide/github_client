@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/utils/index.dart';
-import 'dart:convert';
 import '../apis/weather.dart';
 import '../models/weather.dart';
 import 'package:geolocator/geolocator.dart';
