@@ -55,14 +55,16 @@ class _WeatherScreen extends State<WeatherScreen> {
   Color curTempColorBlack = Colors.black;
   Color curTempColorWhite = Colors.white;
 
+  double currentOffset = 0;
+
   // 背景图当前透明度
   double headerBackgroundOpacity = 1.0;
 
   // 当前温度初始top
   double curTempBottomOriginal = 106.0;
-  // 当前温度top（计算上状态栏）
+  // 当前温度bottom
   double curTempBottom = 106.0;
-  // 当前温度top最大限制（计算上状态栏）
+  // 当前温度bottom最大限制
   double curTempBottomMax = 65.0;
   // 当前温度当前字体
   double curTempMaxFontSize = 112.0;
@@ -76,7 +78,25 @@ class _WeatherScreen extends State<WeatherScreen> {
   // 体感温度最大
   double feelsLikeFontSizeMax = 18.0;
   // 体感温度最小
-  double feelsLikeFontSizeMin = 12.0;
+  double feelsLikeFontSizeMin = 14.0;
+
+  // 底部信息bottom原始位置
+  double footerBottomOriginal = 24;
+  // 底部信息bottom位置
+  double footerBottom = 24;
+  // 底部信息bottom最大位置
+  double footerBottomMax = -48;
+
+  double footerNavBarBottomOriginal = -50;
+  double footerNavBarBottom = -50;
+  double footerNavBarBottomMax = 12;
+
+  double footerRadius = 24;
+  double footerRadiusMax = 24;
+  double footerRadiusMin = 0;
+
+  final GlobalKey headerKey = GlobalKey();
+  final GlobalKey navBarKey = GlobalKey();
 
   @override
   initState() {
@@ -93,6 +113,7 @@ class _WeatherScreen extends State<WeatherScreen> {
   pageScroll() {
     controlTemp();
     controlBackground();
+    controFooter();
   }
 
   // 控制背景透明度
@@ -104,6 +125,36 @@ class _WeatherScreen extends State<WeatherScreen> {
     setState(() {
       headerBackgroundOpacity = 1 - bgSlidePersent;
     });
+  }
+
+  // 控制底部位置
+  controFooter() {
+    final RenderBox renderBoxA =
+        headerKey.currentContext?.findRenderObject() as RenderBox;
+    final RenderBox renderBoxB =
+        navBarKey.currentContext?.findRenderObject() as RenderBox;
+    final Size sizeA = renderBoxA.size;
+    final Offset positionA = renderBoxA.localToGlobal(Offset.zero);
+    final Rect rectA = positionA & sizeA;
+    final Size sizeB = renderBoxB.size;
+    final Offset positionB = renderBoxB.localToGlobal(Offset.zero);
+    final Rect rectB = positionB & sizeB;
+    final bool overlapping = rectA.overlaps(rectB);
+
+    if (overlapping) {
+      setState(() {
+        footerBottom = footerBottomMax;
+        footerNavBarBottom = footerNavBarBottomMax;
+        footerRadius = footerRadiusMin;
+      });
+    }
+    if (!overlapping) {
+      setState(() {
+        footerNavBarBottom = footerNavBarBottomOriginal;
+        footerBottom = footerBottomOriginal;
+        footerRadius = footerRadiusMax;
+      });
+    }
   }
 
   // 控制温度的位置
@@ -197,7 +248,7 @@ class _WeatherScreen extends State<WeatherScreen> {
       return AnimatedPositioned(
         duration: Duration(milliseconds: 100),
         curve: Curves.easeInOut,
-        left: 14,
+        left: 20,
         bottom: curTempBottom,
         child: Container(
           color: Colors.transparent,
@@ -238,8 +289,9 @@ class _WeatherScreen extends State<WeatherScreen> {
 
     // 当前天气状况
     currentWeatherComponent() {
-      return Positioned(
-        top: 10,
+      return AnimatedPositioned(
+        duration: Duration(milliseconds: 300),
+        bottom: 180,
         right: 24,
         child: Column(
           children: [
@@ -253,29 +305,29 @@ class _WeatherScreen extends State<WeatherScreen> {
     // 底部信息
     footerComponent() {
       return AnimatedPositioned(
-        duration: Duration(microseconds: 100),
+        duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         left: 24,
         right: 24,
-        bottom: 18,
+        bottom: footerBottom,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
               'January 18, 16:14',
-              style: TextStyle(color: Colors.white, fontSize: 20),
+              style: TextStyle(color: curTempColor, fontSize: 18),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   'Day 3°',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
+                  style: TextStyle(color: curTempColor, fontSize: 18),
                 ),
                 Text(
                   'Night 1°',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
+                  style: TextStyle(color: curTempColor, fontSize: 18),
                 ),
               ],
             ),
@@ -287,23 +339,26 @@ class _WeatherScreen extends State<WeatherScreen> {
     // 页面导航栏包裹
     pageNavBarComponentWrap() {
       return AnimatedPositioned(
-        duration: Duration(microseconds: 100),
+        duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         left: 0,
         right: 0,
-        bottom: 12,
+        bottom: footerNavBarBottom,
         child: pageNavBarComponent(),
       );
     }
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      key: headerKey,
       width: double.infinity,
       height: 412,
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(footerRadius),
+          bottomRight: Radius.circular(footerRadius),
         ),
       ),
       child: Stack(
@@ -312,7 +367,8 @@ class _WeatherScreen extends State<WeatherScreen> {
           // inputComponent(),
           currentTempComponent(),
           footerComponent(),
-          // currentWeatherComponent(),
+          pageNavBarComponentWrap(),
+          currentWeatherComponent(),
           // currentTimeComponent(),
           // currentHighLowTempComponent(),
           // pageNavBarComponentWrap(),
@@ -448,7 +504,12 @@ class _WeatherScreen extends State<WeatherScreen> {
                 children: [
                   SizedBox(height: 16),
                   pageNavBarComponent(),
-                  SizedBox(height: 16),
+                  Container(
+                    key: navBarKey,
+                    height: 16,
+                    color: Colors.transparent,
+                  ),
+                  // SizedBox(height: 16, key: navBarKey),
                   detailComponent(),
                   SizedBox(height: 1000),
                 ],
