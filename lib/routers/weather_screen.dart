@@ -1,7 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
-import 'dart:math' as math;
+
+// 继承自 SliverPersistentHeaderDelegate 的类，用于实现 Header 的布局和变化逻辑
+class StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  StickyHeaderDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  // 核心方法: 构建 Header 的实际内容
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return SizedBox.expand(child: child);
+  }
+
+  // 是否需要重新构建 Header。通常保持为 true 或在需要时进行更复杂的判断。
+  @override
+  bool shouldRebuild(StickyHeaderDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
+  }
+}
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
@@ -15,18 +51,32 @@ class _WeatherScreen extends State<WeatherScreen> {
   ScrollController scrollviewController = ScrollController();
   double statusBarHeight = 0;
   int pageNavBarIndex = 0;
-  double currentPosition = 0;
+  Color curTempColor = Colors.white;
+  Color curTempColorBlack = Colors.black;
+  Color curTempColorWhite = Colors.white;
 
-  // 温度初始top
-  double originalBigTempTop = 0;
-  // 温度当前top（计算上状态栏）
-  double bigTempTop = 150;
+  // 背景图当前透明度
+  double headerBackgroundOpacity = 1.0;
 
-  Color bigTempColor = Colors.white;
-  double bigTempFontSize = 112;
-  double originBigTempFontSize = 112;
-  double headerBackgroundOpacity = 1;
-  double feelsLikeFontSize = 18;
+  // 当前温度初始top
+  double curTempBottomOriginal = 106.0;
+  // 当前温度top（计算上状态栏）
+  double curTempBottom = 106.0;
+  // 当前温度top最大限制（计算上状态栏）
+  double curTempBottomMax = 65.0;
+  // 当前温度当前字体
+  double curTempMaxFontSize = 112.0;
+  // 当前温度最大字体
+  double curTempFontSizeMax = 112.0;
+  // 当前温度最小字体
+  double curTempFontSizeMin = 57.0;
+
+  // 体感温度当前字体
+  double feelsLikeFontSize = 18.0;
+  // 体感温度最大
+  double feelsLikeFontSizeMax = 18.0;
+  // 体感温度最小
+  double feelsLikeFontSizeMin = 12.0;
 
   @override
   initState() {
@@ -37,11 +87,6 @@ class _WeatherScreen extends State<WeatherScreen> {
   @override
   didChangeDependencies() {
     super.didChangeDependencies();
-    setState(() {
-      statusBarHeight = MediaQuery.of(context).padding.top;
-      bigTempTop = bigTempTop + statusBarHeight;
-      originalBigTempTop = bigTempTop;
-    });
   }
 
   // 根据页面位置控制头部动画细节
@@ -52,41 +97,47 @@ class _WeatherScreen extends State<WeatherScreen> {
 
   // 控制背景透明度
   controlBackground() {
-    double bgMaxPosition = 170;
+    double currentPosition = scrollviewController.offset;
+    double bgMaxPosition = 100;
     double bgSlidePersent = currentPosition / bgMaxPosition;
-
-    // 控制背景图透明度
-    if (bgSlidePersent <= 1) {
+    if (bgSlidePersent > 1) bgSlidePersent = 1;
+    setState(() {
       headerBackgroundOpacity = 1 - bgSlidePersent;
-    }
+    });
   }
 
   // 控制温度的位置
   controlTemp() {
-    final double maxPosition = 230.0;
-    // 获取当前的滚动偏移量
+    final double maxPosition = curTempBottomMax;
     final double scrollOffset = scrollviewController.offset;
+    final double minFontSize = curTempFontSizeMin;
 
-    // 1. 计算元素相对于初始位置的位移：
-    // 如果滚动条向下滚动了 50 像素，元素的位移就是 50 像素。
-    // 如果滚动条向上滚动了 50 像素（scrollOffset为负值，但在滚动视图中一般是正值，越向下越大），元素的位移应减少。
+    double newFontSize = curTempFontSizeMax - scrollOffset;
+    double newPosition = curTempBottomOriginal - scrollOffset;
+    // 计算字体颜色
+    Color newFontColor = curTempColorWhite;
+    // 计算体感温度字体大小
+    double newFeelsLikeFont = feelsLikeFontSizeMax;
 
-    // 2. 计算元素的目标位置
-    double newPosition = originalBigTempTop + scrollOffset;
+    // 如果滚动超出最小限制了，则保持在最大字体值
+    if (newFontSize < minFontSize) {
+      newFontSize = minFontSize;
+      newFontColor = curTempColorWhite;
+      newFeelsLikeFont = feelsLikeFontSizeMax;
+    }
 
-    // 3. 限制新位置在 [150,230] 的范围内：
-    // 如果滚动条向下滑，元素的位置不应超过230
-    if (newPosition > maxPosition) {
+    if (newPosition < maxPosition) {
       newPosition = maxPosition;
+      newFontColor = curTempColorBlack;
+      newFeelsLikeFont = feelsLikeFontSizeMin;
     }
 
-    // 4. 更新状态
-    // 只有在新位置与旧位置不同时才调用 setState，以避免不必要的重绘。
-    if (bigTempTop != newPosition) {
-      setState(() {
-        bigTempTop = newPosition;
-      });
-    }
+    setState(() {
+      curTempMaxFontSize = newFontSize;
+      curTempBottom = newPosition;
+      curTempColor = newFontColor;
+      feelsLikeFontSize = newFeelsLikeFont;
+    });
   }
 
   // 顶部时间和天气组件
@@ -147,9 +198,10 @@ class _WeatherScreen extends State<WeatherScreen> {
         duration: Duration(milliseconds: 100),
         curve: Curves.easeInOut,
         left: 14,
-        top: bigTempTop,
+        bottom: curTempBottom,
         child: Container(
           color: Colors.transparent,
+          alignment: Alignment.bottomCenter,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.ideographic,
@@ -160,8 +212,8 @@ class _WeatherScreen extends State<WeatherScreen> {
                   curve: Curves.easeInOut,
                   duration: Duration(milliseconds: 100),
                   style: TextStyle(
-                    color: bigTempColor,
-                    fontSize: bigTempFontSize,
+                    color: curTempColor,
+                    fontSize: curTempMaxFontSize,
                   ),
                   child: Text('3°'),
                 ),
@@ -170,7 +222,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                 curve: Curves.easeInOut,
                 duration: Duration(milliseconds: 100),
                 style: TextStyle(
-                  color: bigTempColor,
+                  color: curTempColor,
                   fontSize: feelsLikeFontSize,
                 ),
                 child: Transform.translate(
@@ -198,39 +250,49 @@ class _WeatherScreen extends State<WeatherScreen> {
       );
     }
 
-    // 当前时间
-    currentTimeComponent() {
-      // 日期时间
-      return Positioned(
-        bottom: 18,
+    // 底部信息
+    footerComponent() {
+      return AnimatedPositioned(
+        duration: Duration(microseconds: 100),
+        curve: Curves.easeInOut,
         left: 24,
-        child: Column(
+        right: 24,
+        bottom: 18,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
               'January 18, 16:14',
               style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'Day 3°',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+                Text(
+                  'Night 1°',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+              ],
             ),
           ],
         ),
       );
     }
 
-    // 当天最高最低温度
-    currentHighLowTempComponent() {
-      return Positioned(
-        bottom: 18,
-        right: 24,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text('Day 3°', style: TextStyle(color: Colors.white, fontSize: 20)),
-            Text(
-              'Night 1°',
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ],
-        ),
+    // 页面导航栏包裹
+    pageNavBarComponentWrap() {
+      return AnimatedPositioned(
+        duration: Duration(microseconds: 100),
+        curve: Curves.easeInOut,
+        left: 0,
+        right: 0,
+        bottom: 12,
+        child: pageNavBarComponent(),
       );
     }
 
@@ -249,15 +311,11 @@ class _WeatherScreen extends State<WeatherScreen> {
           backgroundComponent(),
           // inputComponent(),
           currentTempComponent(),
+          footerComponent(),
           // currentWeatherComponent(),
           // currentTimeComponent(),
           // currentHighLowTempComponent(),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 12,
-            child: pageNavBarComponent(),
-          ),
+          // pageNavBarComponentWrap(),
         ],
       ),
     );
@@ -372,19 +430,32 @@ class _WeatherScreen extends State<WeatherScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: pageColor,
-      body: SingleChildScrollView(
+      body: CustomScrollView(
         scrollDirection: Axis.vertical,
         controller: scrollviewController,
-        child: Column(
-          children: [
-            headerComponent(),
-            SizedBox(height: 16),
-            pageNavBarComponent(),
-            SizedBox(height: 16),
-            detailComponent(),
-            SizedBox(height: 1000),
-          ],
-        ),
+        slivers: [
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: StickyHeaderDelegate(
+              minHeight: 228.0,
+              maxHeight: 412.0,
+              child: headerComponent(),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              Column(
+                children: [
+                  SizedBox(height: 16),
+                  pageNavBarComponent(),
+                  SizedBox(height: 16),
+                  detailComponent(),
+                  SizedBox(height: 1000),
+                ],
+              ),
+            ]),
+          ),
+        ],
       ),
     );
   }

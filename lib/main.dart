@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:github_clint_app/routers/home_screen.dart';
 import 'package:github_clint_app/routers/weather_screen.dart';
 import 'theme.dart';
+import 'routers/sticky_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -34,8 +35,9 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.light, // 跟随系统
       initialRoute: '/weather',
       routes: {
-        // '/': (context) => HomeScreen(),
+        '/': (context) => HomeScreen(),
         '/weather': (context) => WeatherScreen(),
+        '/sticky': (context) => StickyHeaderExample(),
       },
     );
   }
