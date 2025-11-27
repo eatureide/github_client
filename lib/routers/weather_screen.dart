@@ -292,10 +292,17 @@ class _WeatherScreen extends State<WeatherScreen> {
       return AnimatedPositioned(
         duration: Duration(milliseconds: 300),
         bottom: 180,
-        right: 24,
+        right: 12,
         child: Column(
           children: [
-            Icon(Icons.wb_sunny_rounded, size: 100, color: Colors.white),
+            AnimatedSize(
+              duration: Duration(milliseconds: 400),
+              child: Icon(
+                Icons.wb_sunny_rounded,
+                size: 120,
+                color: Colors.white,
+              ),
+            ),
             Text('Cloudy', style: TextStyle(fontSize: 22, color: Colors.white)),
           ],
         ),
@@ -368,7 +375,7 @@ class _WeatherScreen extends State<WeatherScreen> {
           currentTempComponent(),
           footerComponent(),
           pageNavBarComponentWrap(),
-          currentWeatherComponent(),
+          // currentWeatherComponent(),
           // currentTimeComponent(),
           // currentHighLowTempComponent(),
           // pageNavBarComponentWrap(),
