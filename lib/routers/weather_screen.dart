@@ -410,7 +410,9 @@ class _WeatherScreen extends State<WeatherScreen> {
               },
               style: TextButton.styleFrom(
                 backgroundColor: backgroundColor,
-                foregroundColor: Colors.black,
+                foregroundColor: pageNavBarIndex == item['index']
+                    ? Color.fromARGB(255, 45, 2, 76)
+                    : Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
