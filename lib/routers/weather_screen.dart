@@ -11,108 +11,210 @@ class WeatherScreen extends StatefulWidget {
 
 class _WeatherScreen extends State<WeatherScreen> {
   TextEditingController cityController = TextEditingController();
+  ScrollController scrollviewController = ScrollController();
+  double statusBarHeight = 0;
   int pageNavBarIndex = 0;
+  double currentPosition = 0;
+
+  double originalBigTempPosition = 0;
+  double bigTempTop = 150;
+  Color bigTempColor = Colors.white;
+  double bigTempFontSize = 112;
+  double originBigTempFontSize = 112;
+  double headerBackgroundOpacity = 1;
+  double feelsLikeFontSize = 18;
+
+  @override
+  initState() {
+    super.initState();
+    scrollviewController.addListener(pageScroll);
+  }
+
+  @override
+  didChangeDependencies() {
+    super.didChangeDependencies();
+    setState(() {
+      statusBarHeight = MediaQuery.of(context).padding.top;
+      bigTempTop = bigTempTop + statusBarHeight;
+      originalBigTempPosition = bigTempTop;
+    });
+  }
+
+  // 根据页面位置控制头部动画细节
+  pageScroll() {
+    controlTemp();
+    controlBackground();
+  }
+
+  // 控制背景透明度
+  controlBackground() {
+    double bgMaxPosition = 170;
+    double bgSlidePersent = currentPosition / bgMaxPosition;
+
+    // 控制背景图透明度
+    if (bgSlidePersent <= 1) {
+      headerBackgroundOpacity = 1 - bgSlidePersent;
+    }
+  }
+
+  // 控制温度的位置
+  controlTemp() {
+    String direction = scrollviewController.offset > currentPosition
+        ? 'down'
+        : 'up';
+    bool moveDown = direction == 'down';
+    bool moveUp = direction == 'up';
+    currentPosition = scrollviewController.offset;
+    double bigFontMaxPosition = 50;
+    double finalPosition = originalBigTempPosition + bigFontMaxPosition;
+
+    setState(() {
+      bool shoudUp = moveDown && bigTempTop != finalPosition;
+      bool shoudDown = moveUp && bigTempTop != originalBigTempPosition;
+      if (shoudUp) bigTempTop = bigTempTop + 1;
+      if (shoudDown) bigTempTop = bigTempTop - 1;
+    });
+  }
 
   // 顶部时间和天气组件
   headerComponent() {
-    inputComponent() {
-      return Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: cityController,
-              style: TextStyle(color: Colors.white, fontSize: 22),
-              cursorColor: Colors.white,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: 'Search City',
-                hintStyle: TextStyle(
-                  color: const Color.fromARGB(160, 255, 255, 255),
-                ),
-                filled: true,
-                fillColor: Colors.transparent,
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search, color: Colors.white),
-                  onPressed: () {},
-                ),
-              ),
+    // 背景图
+    backgroundComponent() {
+      return Positioned.fill(
+        top: 0,
+        left: 0,
+        child: Container(
+          color: headerColor,
+          child: AnimatedOpacity(
+            opacity: headerBackgroundOpacity,
+            duration: Duration(microseconds: 100),
+            child: Image(
+              image: AssetImage('assets/images/header.png'),
+              fit: BoxFit.cover,
             ),
           ),
-        ],
+        ),
       );
     }
 
-    detailComponent() {
-      return Expanded(
-        child: Stack(
+    // 输入框
+    inputComponent() {
+      return Padding(
+        padding: EdgeInsets.only(top: statusBarHeight),
+        child: Row(
           children: [
-            // 当前温度
-            Positioned(
-              left: 24,
-              top: 60,
-              child: Column(
-                children: [
-                  Text(
-                    '3°',
-                    style: TextStyle(
-                      height: 0.8,
-                      color: Colors.white,
-                      fontSize: 112,
-                    ),
+            Expanded(
+              child: TextField(
+                controller: cityController,
+                style: TextStyle(color: Colors.white, fontSize: 22),
+                cursorColor: Colors.white,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'Search City',
+                  hintStyle: TextStyle(
+                    color: const Color.fromARGB(160, 255, 255, 255),
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Feels Like 5°',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.search, color: Colors.white),
+                    onPressed: () {},
                   ),
-                ],
+                ),
               ),
             ),
-            // 当前天气状况
-            Positioned(
-              top: 10,
-              right: 24,
-              child: Column(
-                children: [
-                  Icon(Icons.wb_sunny_rounded, size: 100, color: Colors.white),
-                  Text(
-                    'Cloudy',
-                    style: TextStyle(fontSize: 22, color: Colors.white),
+          ],
+        ),
+      );
+    }
+
+    // 当前温度
+    currentTempComponent() {
+      return AnimatedPositioned(
+        duration: Duration(milliseconds: 100),
+        curve: Curves.easeInOut,
+        left: 14,
+        top: bigTempTop,
+        child: Container(
+          color: Colors.transparent,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.ideographic,
+            children: [
+              Container(
+                color: Colors.transparent,
+                child: AnimatedDefaultTextStyle(
+                  curve: Curves.easeInOut,
+                  duration: Duration(milliseconds: 100),
+                  style: TextStyle(
+                    color: bigTempColor,
+                    fontSize: bigTempFontSize,
                   ),
-                ],
+                  child: Text('3°'),
+                ),
               ),
+              AnimatedDefaultTextStyle(
+                curve: Curves.easeInOut,
+                duration: Duration(milliseconds: 100),
+                style: TextStyle(
+                  color: bigTempColor,
+                  fontSize: feelsLikeFontSize,
+                ),
+                child: Transform.translate(
+                  offset: Offset(-10.0, 0.0),
+                  child: Text('Feels Like 5°'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 当前天气状况
+    currentWeatherComponent() {
+      return Positioned(
+        top: 10,
+        right: 24,
+        child: Column(
+          children: [
+            Icon(Icons.wb_sunny_rounded, size: 100, color: Colors.white),
+            Text('Cloudy', style: TextStyle(fontSize: 22, color: Colors.white)),
+          ],
+        ),
+      );
+    }
+
+    // 当前时间
+    currentTimeComponent() {
+      // 日期时间
+      return Positioned(
+        bottom: 18,
+        left: 24,
+        child: Column(
+          children: [
+            Text(
+              'January 18, 16:14',
+              style: TextStyle(color: Colors.white, fontSize: 20),
             ),
-            // 日期时间
-            Positioned(
-              bottom: 18,
-              left: 24,
-              child: Column(
-                children: [
-                  Text(
-                    'January 18, 16:14',
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                ],
-              ),
-            ),
-            // 当天最高最低温度
-            Positioned(
-              bottom: 18,
-              right: 24,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Day 3°',
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  Text(
-                    'Night 1°',
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                ],
-              ),
+          ],
+        ),
+      );
+    }
+
+    // 当天最高最低温度
+    currentHighLowTempComponent() {
+      return Positioned(
+        bottom: 18,
+        right: 24,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text('Day 3°', style: TextStyle(color: Colors.white, fontSize: 20)),
+            Text(
+              'Night 1°',
+              style: TextStyle(color: Colors.white, fontSize: 20),
             ),
           ],
         ),
@@ -122,21 +224,27 @@ class _WeatherScreen extends State<WeatherScreen> {
     return Container(
       width: double.infinity,
       height: 412,
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
-        image: DecorationImage(
-          image: AssetImage('assets/images/header.png'),
-          fit: BoxFit.cover,
-        ),
       ),
-      child: Column(
+      child: Stack(
         children: [
-          SizedBox(height: MediaQuery.of(context).padding.top),
-          inputComponent(),
-          detailComponent(),
+          backgroundComponent(),
+          // inputComponent(),
+          currentTempComponent(),
+          // currentWeatherComponent(),
+          // currentTimeComponent(),
+          // currentHighLowTempComponent(),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 12,
+            child: pageNavBarComponent(),
+          ),
         ],
       ),
     );
@@ -191,7 +299,7 @@ class _WeatherScreen extends State<WeatherScreen> {
         width: 186,
         height: 76,
         decoration: BoxDecoration(
-          color: Color.fromARGB(255, 234, 222, 253),
+          color: cardColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Padding(
@@ -251,8 +359,9 @@ class _WeatherScreen extends State<WeatherScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: pageColor,
-      body: Container(
-        color: Colors.transparent,
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        controller: scrollviewController,
         child: Column(
           children: [
             headerComponent(),
@@ -260,6 +369,7 @@ class _WeatherScreen extends State<WeatherScreen> {
             pageNavBarComponent(),
             SizedBox(height: 16),
             detailComponent(),
+            SizedBox(height: 1000),
           ],
         ),
       ),
