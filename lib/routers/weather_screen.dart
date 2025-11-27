@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:math' as math;
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
@@ -16,8 +17,11 @@ class _WeatherScreen extends State<WeatherScreen> {
   int pageNavBarIndex = 0;
   double currentPosition = 0;
 
-  double originalBigTempPosition = 0;
+  // 温度初始top
+  double originalBigTempTop = 0;
+  // 温度当前top（计算上状态栏）
   double bigTempTop = 150;
+
   Color bigTempColor = Colors.white;
   double bigTempFontSize = 112;
   double originBigTempFontSize = 112;
@@ -36,7 +40,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     setState(() {
       statusBarHeight = MediaQuery.of(context).padding.top;
       bigTempTop = bigTempTop + statusBarHeight;
-      originalBigTempPosition = bigTempTop;
+      originalBigTempTop = bigTempTop;
     });
   }
 
@@ -59,21 +63,30 @@ class _WeatherScreen extends State<WeatherScreen> {
 
   // 控制温度的位置
   controlTemp() {
-    String direction = scrollviewController.offset > currentPosition
-        ? 'down'
-        : 'up';
-    bool moveDown = direction == 'down';
-    bool moveUp = direction == 'up';
-    currentPosition = scrollviewController.offset;
-    double bigFontMaxPosition = 50;
-    double finalPosition = originalBigTempPosition + bigFontMaxPosition;
+    final double maxPosition = 230.0;
+    // 获取当前的滚动偏移量
+    final double scrollOffset = scrollviewController.offset;
 
-    setState(() {
-      bool shoudUp = moveDown && bigTempTop != finalPosition;
-      bool shoudDown = moveUp && bigTempTop != originalBigTempPosition;
-      if (shoudUp) bigTempTop = bigTempTop + 1;
-      if (shoudDown) bigTempTop = bigTempTop - 1;
-    });
+    // 1. 计算元素相对于初始位置的位移：
+    // 如果滚动条向下滚动了 50 像素，元素的位移就是 50 像素。
+    // 如果滚动条向上滚动了 50 像素（scrollOffset为负值，但在滚动视图中一般是正值，越向下越大），元素的位移应减少。
+
+    // 2. 计算元素的目标位置
+    double newPosition = originalBigTempTop + scrollOffset;
+
+    // 3. 限制新位置在 [150,230] 的范围内：
+    // 如果滚动条向下滑，元素的位置不应超过230
+    if (newPosition > maxPosition) {
+      newPosition = maxPosition;
+    }
+
+    // 4. 更新状态
+    // 只有在新位置与旧位置不同时才调用 setState，以避免不必要的重绘。
+    if (bigTempTop != newPosition) {
+      setState(() {
+        bigTempTop = newPosition;
+      });
+    }
   }
 
   // 顶部时间和天气组件
