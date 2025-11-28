@@ -95,6 +95,16 @@ class _WeatherScreen extends State<WeatherScreen> {
   double footerRadiusMax = 24;
   double footerRadiusMin = 0;
 
+  double weatherIconBottomOriginal = 180;
+  double weatherIconBottom = 180;
+  double weatherIconBottomMax = 60;
+
+  double weatherIconSizeOriginal = 120;
+  double weatherIconSize = 120;
+  double weatherIconSizeMax = 80;
+
+  double weatherIconFontOpacity = 1;
+
   final GlobalKey headerKey = GlobalKey();
   final GlobalKey navBarKey = GlobalKey();
 
@@ -112,6 +122,7 @@ class _WeatherScreen extends State<WeatherScreen> {
   // 根据页面位置控制头部动画细节
   pageScroll() {
     controlTemp();
+    controlWeather();
     controlBackground();
     controFooter();
   }
@@ -121,9 +132,35 @@ class _WeatherScreen extends State<WeatherScreen> {
     double currentPosition = scrollviewController.offset;
     double bgMaxPosition = 100;
     double bgSlidePersent = currentPosition / bgMaxPosition;
-    if (bgSlidePersent > 1) bgSlidePersent = 1;
+
+    if (bgSlidePersent > 1) {
+      weatherIconFontOpacity = 1;
+      bgSlidePersent = 1;
+    }
+
     setState(() {
       headerBackgroundOpacity = 1 - bgSlidePersent;
+      weatherIconFontOpacity = 1 - bgSlidePersent;
+    });
+  }
+
+  controlWeather() {
+    final double scrollOffset = scrollviewController.offset;
+    double newPosition = weatherIconBottomOriginal - scrollOffset;
+    double newSize = weatherIconSizeOriginal - scrollOffset;
+
+    if (newPosition < weatherIconBottomMax) {
+      newPosition = weatherIconBottomMax;
+    }
+
+    if (newSize < weatherIconSizeMax) {
+      newSize = weatherIconSizeMax;
+    }
+
+    setState(() {
+      weatherIconBottom = newPosition;
+      weatherIconSize = newSize;
+      weatherIconFontOpacity = weatherIconFontOpacity;
     });
   }
 
@@ -165,6 +202,7 @@ class _WeatherScreen extends State<WeatherScreen> {
 
     double newFontSize = curTempFontSizeMax - scrollOffset;
     double newPosition = curTempBottomOriginal - scrollOffset;
+
     // 计算字体颜色
     Color newFontColor = curTempColorWhite;
     // 计算体感温度字体大小
@@ -291,7 +329,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     currentWeatherComponent() {
       return AnimatedPositioned(
         duration: Duration(milliseconds: 300),
-        bottom: 180,
+        bottom: weatherIconBottom,
         right: 12,
         child: Column(
           children: [
@@ -299,11 +337,19 @@ class _WeatherScreen extends State<WeatherScreen> {
               duration: Duration(milliseconds: 400),
               child: Icon(
                 Icons.wb_sunny_rounded,
-                size: 120,
-                color: Colors.white,
+                size: weatherIconSize,
+                color: curTempColor,
               ),
             ),
-            Text('Cloudy', style: TextStyle(fontSize: 22, color: Colors.white)),
+            AnimatedDefaultTextStyle(
+              duration: Duration(milliseconds: 400),
+              style: TextStyle(fontSize: 22, color: curTempColor),
+              child: AnimatedOpacity(
+                opacity: weatherIconFontOpacity,
+                duration: Duration(milliseconds: 300),
+                child: Text('Cloudy'),
+              ),
+            ),
           ],
         ),
       );
@@ -375,7 +421,7 @@ class _WeatherScreen extends State<WeatherScreen> {
           currentTempComponent(),
           footerComponent(),
           pageNavBarComponentWrap(),
-          // currentWeatherComponent(),
+          currentWeatherComponent(),
           // currentTimeComponent(),
           // currentHighLowTempComponent(),
           // pageNavBarComponentWrap(),
