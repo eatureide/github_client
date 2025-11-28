@@ -435,7 +435,8 @@ class _WeatherScreen extends State<WeatherScreen> {
     );
   }
 
-  Widget pageNavBarComponent() {
+  // 天气图标
+  pageNavBarComponent() {
     List<Map<String, dynamic>> buttons = [
       {'title': 'Today', 'index': 0},
       {'title': 'Tomorrow', 'index': 1},
@@ -491,10 +492,11 @@ class _WeatherScreen extends State<WeatherScreen> {
     );
   }
 
+  // 天气详情卡片小组件
   detailComponent() {
     buildDetailCard({required IconData icon, required String title}) {
       return Container(
-        width: 186,
+        // width: 186,
         height: 76,
         decoration: BoxDecoration(
           color: cardColor,
@@ -529,10 +531,20 @@ class _WeatherScreen extends State<WeatherScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              buildDetailCard(icon: CupertinoIcons.wind, title: 'Wind Speed'),
-              buildDetailCard(
-                icon: CupertinoIcons.cloud_rain,
-                title: 'Rain chance',
+              Expanded(
+                flex: 1,
+                child: buildDetailCard(
+                  icon: CupertinoIcons.wind,
+                  title: 'Wind Speed',
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: buildDetailCard(
+                  icon: CupertinoIcons.cloud_rain,
+                  title: 'Rain chance',
+                ),
               ),
             ],
           ),
@@ -541,11 +553,21 @@ class _WeatherScreen extends State<WeatherScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              buildDetailCard(
-                icon: CupertinoIcons.text_justifyleft,
-                title: 'Pressure',
+              Expanded(
+                flex: 1,
+                child: buildDetailCard(
+                  icon: CupertinoIcons.text_justifyleft,
+                  title: 'Pressure',
+                ),
               ),
-              buildDetailCard(icon: CupertinoIcons.sun_min, title: 'UV Index'),
+              SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: buildDetailCard(
+                  icon: CupertinoIcons.sun_min,
+                  title: 'UV Index',
+                ),
+              ),
             ],
           ),
         ],
