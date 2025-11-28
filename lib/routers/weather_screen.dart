@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
+import '../component/curve.dart';
 
 // 继承自 SliverPersistentHeaderDelegate 的类，用于实现 Header 的布局和变化逻辑
 class StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -51,12 +52,14 @@ class _WeatherScreen extends State<WeatherScreen> {
   ScrollController scrollviewController = ScrollController();
   double statusBarHeight = 0;
   int pageNavBarIndex = 0;
-  Color curTempColor = Colors.white;
-  Color curTempColorBlack = Colors.black;
-  Color curTempColorWhite = Colors.white;
 
   // 当前滚动位置
   double currentOffset = 0;
+
+  // 头部字体颜色
+  Color curTempColor = Colors.white;
+  Color curTempColorBlack = Colors.black;
+  Color curTempColorWhite = Colors.white;
 
   // 背景图当前透明度
   double headerBackgroundOpacity = 1.0;
@@ -274,9 +277,7 @@ class _WeatherScreen extends State<WeatherScreen> {
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: 'Search City',
-              hintStyle: TextStyle(
-                color: curTempColor,
-              ),
+              hintStyle: TextStyle(color: curTempColor),
               filled: true,
               fillColor: Colors.transparent,
               suffixIcon: IconButton(
@@ -430,9 +431,6 @@ class _WeatherScreen extends State<WeatherScreen> {
           footerComponent(),
           pageNavBarComponentWrap(),
           currentWeatherComponent(),
-          // currentTimeComponent(),
-          // currentHighLowTempComponent(),
-          // pageNavBarComponentWrap(),
         ],
       ),
     );
@@ -572,6 +570,39 @@ class _WeatherScreen extends State<WeatherScreen> {
     );
   }
 
+  weatherCurveComponent() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: EdgeInsets.fromLTRB(12, 12, 24, 0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  margin: EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  child: Icon(CupertinoIcons.calendar, size: 14),
+                ),
+                Text('Day forecast', style: TextStyle(fontSize: 14)),
+              ],
+            ),
+            curveComponent(),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -596,6 +627,8 @@ class _WeatherScreen extends State<WeatherScreen> {
                   pageNavBarComponent(),
                   SizedBox(height: 16, key: navBarKey),
                   detailComponent(),
+                  SizedBox(height: 16),
+                  weatherCurveComponent(),
                   SizedBox(height: 1000),
                 ],
               ),

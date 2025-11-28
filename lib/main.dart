@@ -35,9 +35,9 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.light, // 跟随系统
       initialRoute: '/weather',
       routes: {
-        '/': (context) => HomeScreen(),
+        // '/': (context) => HomeScreen(),
         '/weather': (context) => WeatherScreen(),
-        '/sticky': (context) => StickyHeaderExample(),
+        // '/sticky': (context) => SimpleWeatherChart(),
       },
     );
   }
