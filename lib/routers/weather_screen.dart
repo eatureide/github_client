@@ -87,22 +87,27 @@ class _WeatherScreen extends State<WeatherScreen> {
   // 底部信息bottom最大位置
   double footerBottomMax = -48;
 
+  // 控制导航栏位置
   double footerNavBarBottomOriginal = -50;
   double footerNavBarBottom = -50;
   double footerNavBarBottomMax = 12;
 
+  // 控制卡片圆角
   double footerRadius = 24;
   double footerRadiusMax = 24;
   double footerRadiusMin = 0;
 
+  // 控制天气图标位置
   double weatherIconBottomOriginal = 180;
   double weatherIconBottom = 180;
   double weatherIconBottomMax = 60;
 
+  // 控制天气图标大小
   double weatherIconSizeOriginal = 120;
   double weatherIconSize = 120;
   double weatherIconSizeMax = 80;
 
+  // 控制天气图标文字
   double weatherIconFontOpacity = 1;
 
   final GlobalKey headerKey = GlobalKey();
@@ -430,43 +435,54 @@ class _WeatherScreen extends State<WeatherScreen> {
     );
   }
 
-  pageNavBarComponent() {
-    List<dynamic> buttoms = [
+  Widget pageNavBarComponent() {
+    List<Map<String, dynamic>> buttons = [
       {'title': 'Today', 'index': 0},
       {'title': 'Tomorrow', 'index': 1},
       {'title': '10days', 'index': 2},
     ];
+
+    double itemPadding = 4.0;
     return Container(
       color: Colors.transparent,
       padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: buttoms.map((item) {
-          Color backgroundColor = pageNavBarIndex == item['index']
-              ? Color.fromARGB(255, 222, 183, 252)
-              : Colors.white;
-          return Container(
-            width: 120,
-            color: Colors.transparent,
-            child: TextButton(
-              onPressed: () {
-                setState(() {
-                  pageNavBarIndex = item['index'];
-                });
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: backgroundColor,
-                foregroundColor: pageNavBarIndex == item['index']
-                    ? Color.fromARGB(255, 45, 2, 76)
-                    : Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+        children: buttons.map((item) {
+          bool isSelected = pageNavBarIndex == item['index'];
+
+          Color backgroundColor = isSelected
+              ? Color.fromARGB(255, 222, 183, 252) // 选中时的背景色
+              : Colors.white; // 未选中时的背景色
+
+          Color foregroundColor = isSelected
+              ? Color.fromARGB(255, 45, 2, 76) // 选中时的文字颜色
+              : Colors.black; // 未选中时的文字颜色
+
+          return Expanded(
+            flex: 1,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: itemPadding),
+              child: TextButton(
+                onPressed: () {
+                  if (mounted) {
+                    setState(() {
+                      pageNavBarIndex = item['index'];
+                    });
+                  }
+                },
+                style: TextButton.styleFrom(
+                  backgroundColor: backgroundColor,
+                  foregroundColor: foregroundColor,
+                  minimumSize: Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: Text(
-                item['title'],
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  item['title'],
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           );
