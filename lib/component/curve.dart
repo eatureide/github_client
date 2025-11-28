@@ -21,7 +21,57 @@ curveComponent() {
     child: LineChart(
       duration: Duration(milliseconds: 1000), // 设置动画持续时间为 800ms
       curve: Curves.easeInOut, // 设置动画曲线为缓入缓出
+
       LineChartData(
+        lineTouchData: LineTouchData(
+          enabled: true,
+          handleBuiltInTouches: true,
+          // 2. 配置提示框 (Tooltip) 样式
+          getTouchedSpotIndicator: (barData, spotIndexes) {
+            return spotIndexes.map((index) {
+              // 返回自定义的指示器数据
+              return TouchedSpotIndicatorData(
+                // 配置指示线 (这条线是垂直的，样式由 FlLine 决定)
+                FlLine(
+                  color: Color.fromARGB(255, 32, 1, 91), // 指示线颜色
+                  strokeWidth: 2, // 线的粗细
+                  dashArray: [4, 4], // 设置为虚线 [实线长度, 空白长度]
+                ),
+
+                // 配置指示点（触摸点上显示的小圆点）
+                FlDotData(
+                  show: true,
+                  getDotPainter: (spot, percent, barData, index) {
+                    return FlDotCirclePainter(
+                      radius: 7.0, // 指示点圆圈半径
+                      color: Color.fromARGB(255, 32, 1, 91), // 指示线颜色
+                      strokeWidth: 3, // 边框宽度
+                      strokeColor: Colors.white, // 边框颜色
+                    );
+                  },
+                ),
+              );
+            }).toList();
+          },
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (LineBarSpot touchedSpot) {
+              return Colors.white;
+            },
+            tooltipRoundedRadius: 8, // 提示框圆角
+            fitInsideHorizontally: true, // 确保提示框在图表内
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((LineBarSpot touchedSpot) {
+                return LineTooltipItem(
+                  touchedSpot.x.toString(),
+                  const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ),
         // 1. 数据配置
         lineBarsData: [
           LineChartBarData(
