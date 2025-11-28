@@ -55,6 +55,7 @@ class _WeatherScreen extends State<WeatherScreen> {
   Color curTempColorBlack = Colors.black;
   Color curTempColorWhite = Colors.white;
 
+  // 当前滚动位置
   double currentOffset = 0;
 
   // 背景图当前透明度
@@ -100,12 +101,12 @@ class _WeatherScreen extends State<WeatherScreen> {
   // 控制天气图标位置
   double weatherIconBottomOriginal = 180;
   double weatherIconBottom = 180;
-  double weatherIconBottomMax = 60;
+  double weatherIconBottomMax = 56;
 
   // 控制天气图标大小
   double weatherIconSizeOriginal = 120;
   double weatherIconSize = 120;
-  double weatherIconSizeMax = 80;
+  double weatherIconSizeMax = 70;
 
   // 控制天气图标文字
   double weatherIconFontOpacity = 1;
@@ -122,6 +123,8 @@ class _WeatherScreen extends State<WeatherScreen> {
   @override
   didChangeDependencies() {
     super.didChangeDependencies();
+    final mediaQueryData = MediaQuery.of(context);
+    statusBarHeight = mediaQueryData.padding.top;
   }
 
   // 根据页面位置控制头部动画细节
@@ -149,6 +152,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     });
   }
 
+  // 控制天气图标位置
   controlWeather() {
     final double scrollOffset = scrollviewController.offset;
     double newPosition = weatherIconBottomOriginal - scrollOffset;
@@ -182,21 +186,23 @@ class _WeatherScreen extends State<WeatherScreen> {
     final Offset positionB = renderBoxB.localToGlobal(Offset.zero);
     final Rect rectB = positionB & sizeB;
     final bool overlapping = rectA.overlaps(rectB);
+    String direction = scrollviewController.offset < currentOffset
+        ? 'up'
+        : 'down';
 
-    if (overlapping) {
-      setState(() {
+    setState(() {
+      currentOffset = scrollviewController.offset;
+      if (overlapping && direction == 'down') {
         footerBottom = footerBottomMax;
         footerNavBarBottom = footerNavBarBottomMax;
         footerRadius = footerRadiusMin;
-      });
-    }
-    if (!overlapping) {
-      setState(() {
+      }
+      if (!overlapping && direction != 'down') {
         footerNavBarBottom = footerNavBarBottomOriginal;
         footerBottom = footerBottomOriginal;
         footerRadius = footerRadiusMax;
-      });
-    }
+      }
+    });
   }
 
   // 控制温度的位置
@@ -257,31 +263,28 @@ class _WeatherScreen extends State<WeatherScreen> {
 
     // 输入框
     inputComponent() {
-      return Padding(
-        padding: EdgeInsets.only(top: statusBarHeight),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: cityController,
-                style: TextStyle(color: Colors.white, fontSize: 22),
-                cursorColor: Colors.white,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'Search City',
-                  hintStyle: TextStyle(
-                    color: const Color.fromARGB(160, 255, 255, 255),
-                  ),
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.search, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                ),
+      return AnimatedPositioned(
+        duration: Duration(milliseconds: 300),
+        child: Padding(
+          padding: EdgeInsets.only(top: statusBarHeight),
+          child: TextField(
+            controller: cityController,
+            style: TextStyle(color: curTempColor, fontSize: 22),
+            cursorColor: curTempColor,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Search City',
+              hintStyle: TextStyle(
+                color: curTempColor,
+              ),
+              filled: true,
+              fillColor: Colors.transparent,
+              suffixIcon: IconButton(
+                icon: Icon(Icons.search, color: curTempColor),
+                onPressed: () {},
               ),
             ),
-          ],
+          ),
         ),
       );
     }
@@ -422,7 +425,7 @@ class _WeatherScreen extends State<WeatherScreen> {
       child: Stack(
         children: [
           backgroundComponent(),
-          // inputComponent(),
+          inputComponent(),
           currentTempComponent(),
           footerComponent(),
           pageNavBarComponentWrap(),
@@ -435,7 +438,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     );
   }
 
-  // 天气图标
+  // 页面导航栏
   pageNavBarComponent() {
     List<Map<String, dynamic>> buttons = [
       {'title': 'Today', 'index': 0},
@@ -443,11 +446,10 @@ class _WeatherScreen extends State<WeatherScreen> {
       {'title': '10days', 'index': 2},
     ];
 
-    double itemPadding = 4.0;
-    return Container(
-      color: Colors.transparent,
-      padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: buttons.map((item) {
           bool isSelected = pageNavBarIndex == item['index'];
 
@@ -459,31 +461,26 @@ class _WeatherScreen extends State<WeatherScreen> {
               ? Color.fromARGB(255, 45, 2, 76) // 选中时的文字颜色
               : Colors.black; // 未选中时的文字颜色
 
-          return Expanded(
-            flex: 1,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: itemPadding),
-              child: TextButton(
-                onPressed: () {
-                  if (mounted) {
-                    setState(() {
-                      pageNavBarIndex = item['index'];
-                    });
-                  }
-                },
-                style: TextButton.styleFrom(
-                  backgroundColor: backgroundColor,
-                  foregroundColor: foregroundColor,
-                  minimumSize: Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          return Container(
+            width: 116,
+            color: Colors.transparent,
+            child: TextButton(
+              onPressed: () {
+                setState(() {
+                  pageNavBarIndex = item['index'];
+                });
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: backgroundColor,
+                foregroundColor: foregroundColor,
+                minimumSize: Size.fromHeight(48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(
-                  item['title'],
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+              ),
+              child: Text(
+                item['title'],
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           );
@@ -538,7 +535,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                   title: 'Wind Speed',
                 ),
               ),
-              SizedBox(width: 8),
+              SizedBox(width: 16),
               Expanded(
                 flex: 1,
                 child: buildDetailCard(
@@ -548,7 +545,7 @@ class _WeatherScreen extends State<WeatherScreen> {
               ),
             ],
           ),
-          SizedBox(height: 14),
+          SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -560,7 +557,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                   title: 'Pressure',
                 ),
               ),
-              SizedBox(width: 8),
+              SizedBox(width: 16),
               Expanded(
                 flex: 1,
                 child: buildDetailCard(
@@ -597,12 +594,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                 children: [
                   SizedBox(height: 16),
                   pageNavBarComponent(),
-                  Container(
-                    key: navBarKey,
-                    height: 16,
-                    color: Colors.transparent,
-                  ),
-                  // SizedBox(height: 16, key: navBarKey),
+                  SizedBox(height: 16, key: navBarKey),
                   detailComponent(),
                   SizedBox(height: 1000),
                 ],
