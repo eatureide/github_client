@@ -17,8 +17,9 @@ class _ChanceOfRain extends State<ChanceOfRain> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text('7PM'),
-          SizedBox(
-            width: 280,
+          SizedBox(width: 12),
+          Expanded(
+            flex: 1,
             child: LinearProgressIndicator(
               value: 0.5,
               minHeight: 28,
@@ -27,6 +28,7 @@ class _ChanceOfRain extends State<ChanceOfRain> {
               borderRadius: BorderRadius.circular(28),
             ),
           ),
+          SizedBox(width: 12),
           Text('27%'),
         ],
       ),
