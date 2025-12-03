@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
 import '../component/curve.dart';
+import '../component/rain.dart';
+import '../component/sun.dart';
+import '../component/hourly.dart';
+import '../component/days.dart';
 
 // 继承自 SliverPersistentHeaderDelegate 的类，用于实现 Header 的布局和变化逻辑
 class StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -570,6 +574,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     );
   }
 
+  // 温度走势图
   weatherCurveComponent() {
     return Padding(
       padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
@@ -596,7 +601,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                 Text('Day forecast', style: TextStyle(fontSize: 14)),
               ],
             ),
-            curveComponent(),
+            CurveComponent(),
           ],
         ),
       ),
@@ -628,8 +633,16 @@ class _WeatherScreen extends State<WeatherScreen> {
                   SizedBox(height: 16, key: navBarKey),
                   detailComponent(),
                   SizedBox(height: 16),
+                  Hourly(),
+                  SizedBox(height: 16),
                   weatherCurveComponent(),
-                  SizedBox(height: 1000),
+                  SizedBox(height: 16),
+                  ChanceOfRain(), // 降雨率
+                  SizedBox(height: 16),
+                  SunRiseAndSet(), // 日出日落时间
+                  SizedBox(height: 16),
+                  Days(),
+                  SizedBox(height: 100),
                 ],
               ),
             ]),
