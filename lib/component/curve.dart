@@ -110,8 +110,8 @@ class _CurveComponent extends State<CurveComponent> {
                 show: true,
                 checkToShowDot: (spot, barData) {
                   // 例如：只显示最后一个点
-                  print(spot.x);
-                  print(barData.spots.last.x);
+                  // print(spot.x);
+                  // print(barData.spots.last.x);
                   return spot.x == barData.spots.last.x;
                 },
                 getDotPainter: (spot, percent, barData, index) {

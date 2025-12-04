@@ -6,6 +6,25 @@ import '../component/rain.dart';
 import '../component/sun.dart';
 import '../component/hourly.dart';
 import '../component/days.dart';
+import '../apis/weather.dart';
+import '../utils/index.dart';
+import '../models/weather.dart';
+
+const List<String> monthNames = [
+  '', // 索引 0 (占位符)
+  'January', // 索引 1
+  'February', // 索引 2
+  'March', // 索引 3
+  'April', // 索引 4
+  'May', // 索引 5
+  'June', // 索引 6
+  'July', // 索引 7
+  'August', // 索引 8
+  'September', // 索引 9
+  'October', // 索引 10
+  'November', // 索引 11
+  'December', // 索引 12
+];
 
 // 继承自 SliverPersistentHeaderDelegate 的类，用于实现 Header 的布局和变化逻辑
 class StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -56,6 +75,8 @@ class _WeatherScreen extends State<WeatherScreen> {
   ScrollController scrollviewController = ScrollController();
   double statusBarHeight = 0;
   int pageNavBarIndex = 0;
+  WeatherData? weatherData;
+  String updateTime = '';
 
   // 当前滚动位置
   double currentOffset = 0;
@@ -125,6 +146,7 @@ class _WeatherScreen extends State<WeatherScreen> {
   initState() {
     super.initState();
     scrollviewController.addListener(pageScroll);
+    requestCityData();
   }
 
   @override
@@ -132,6 +154,26 @@ class _WeatherScreen extends State<WeatherScreen> {
     super.didChangeDependencies();
     final mediaQueryData = MediaQuery.of(context);
     statusBarHeight = mediaQueryData.padding.top;
+  }
+
+  requestCityData() async {
+    Map<String, dynamic> response = await getCityId('广州');
+    final {'location': location} = response;
+    final {'id': id, 'name': name} = location[0];
+    WeatherData now = await getWeather(id, name);
+    DateTime date = DateTime.parse(now.obsTime);
+
+    String month = monthNames[date.month];
+    int day = date.day;
+    int hour = date.hour;
+    int min = date.minute;
+    String dateStr = '$month $day,  $hour:$min';
+
+    setState(() {
+      updateTime = dateStr;
+      weatherData = now;
+    });
+    // console(date.month);
   }
 
   // 根据页面位置控制头部动画细节
@@ -317,7 +359,10 @@ class _WeatherScreen extends State<WeatherScreen> {
                     color: curTempColor,
                     fontSize: curTempMaxFontSize,
                   ),
-                  child: Text('3°'),
+                  child: (() {
+                    if (weatherData == null) return Text('-°');
+                    return Text('${weatherData!.temp}°');
+                  })(),
                 ),
               ),
               AnimatedDefaultTextStyle(
@@ -329,7 +374,10 @@ class _WeatherScreen extends State<WeatherScreen> {
                 ),
                 child: Transform.translate(
                   offset: Offset(-10.0, 0.0),
-                  child: Text('Feels Like 5°'),
+                  child: (() {
+                    if (weatherData == null) return Text('0°');
+                    return Text('Feels Like ${weatherData!.feelsLike}°');
+                  })(),
                 ),
               ),
             ],
@@ -340,6 +388,9 @@ class _WeatherScreen extends State<WeatherScreen> {
 
     // 当前天气状况
     currentWeatherComponent() {
+      Map<String, IconData> iconList = {'104': CupertinoIcons.cloud_fill};
+      Map<String, String> weatherList = {'阴': 'Cloudy'};
+
       return AnimatedPositioned(
         duration: Duration(milliseconds: 300),
         bottom: weatherIconBottom,
@@ -348,11 +399,21 @@ class _WeatherScreen extends State<WeatherScreen> {
           children: [
             AnimatedSize(
               duration: Duration(milliseconds: 400),
-              child: Icon(
-                Icons.wb_sunny_rounded,
-                size: weatherIconSize,
-                color: curTempColor,
-              ),
+              child: (() {
+                if (weatherData == null ||
+                    iconList[weatherData!.icon] == null) {
+                  return Icon(
+                    CupertinoIcons.rays,
+                    size: weatherIconSize,
+                    color: curTempColor,
+                  );
+                }
+                return Icon(
+                  iconList[weatherData!.icon],
+                  size: weatherIconSize,
+                  color: curTempColor,
+                );
+              })(),
             ),
             AnimatedDefaultTextStyle(
               duration: Duration(milliseconds: 400),
@@ -360,7 +421,13 @@ class _WeatherScreen extends State<WeatherScreen> {
               child: AnimatedOpacity(
                 opacity: weatherIconFontOpacity,
                 duration: Duration(milliseconds: 300),
-                child: Text('Cloudy'),
+                child: (() {
+                  if (weatherData == null ||
+                      weatherList[weatherData!.text] == null) {
+                    return Text('');
+                  }
+                  return Text(weatherList[weatherData!.text] as String);
+                })(),
               ),
             ),
           ],
@@ -379,25 +446,28 @@ class _WeatherScreen extends State<WeatherScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              'January 18, 16:14',
-              style: TextStyle(color: curTempColor, fontSize: 18),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'Day 3°',
-                  style: TextStyle(color: curTempColor, fontSize: 18),
-                ),
-                Text(
-                  'Night 1°',
-                  style: TextStyle(color: curTempColor, fontSize: 18),
-                ),
-              ],
-            ),
-          ],
+          children: (() {
+            if (weatherData == null) return [Text('')];
+            return [
+              Text(
+                updateTime,
+                style: TextStyle(color: curTempColor, fontSize: 18),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'WindScale ${weatherData!.windScale}',
+                    style: TextStyle(color: curTempColor, fontSize: 18),
+                  ),
+                  Text(
+                    'WindSpeed ${weatherData!.windSpeed}',
+                    style: TextStyle(color: curTempColor, fontSize: 18),
+                  ),
+                ],
+              ),
+            ];
+          })(),
         ),
       );
     }
@@ -493,7 +563,11 @@ class _WeatherScreen extends State<WeatherScreen> {
 
   // 天气详情卡片小组件
   detailComponent() {
-    buildDetailCard({required IconData icon, required String title}) {
+    buildDetailCard({
+      required IconData icon,
+      required String title,
+      String value = '',
+    }) {
       return Container(
         // width: 186,
         height: 76,
@@ -504,6 +578,7 @@ class _WeatherScreen extends State<WeatherScreen> {
         child: Padding(
           padding: EdgeInsets.all(10),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 width: 40,
@@ -515,7 +590,14 @@ class _WeatherScreen extends State<WeatherScreen> {
                 child: Center(child: Icon(icon)),
               ),
               SizedBox(width: 12),
-              Column(children: [Text(title)]),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(title),
+                  Text(value, style: TextStyle(fontSize: 16)),
+                ],
+              ),
             ],
           ),
         ),
@@ -527,14 +609,16 @@ class _WeatherScreen extends State<WeatherScreen> {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 flex: 1,
                 child: buildDetailCard(
                   icon: CupertinoIcons.wind,
                   title: 'Wind Speed',
+                  value: (() {
+                    if (weatherData == null) return '';
+                    return '${weatherData!.windSpeed} km/h';
+                  })(),
                 ),
               ),
               SizedBox(width: 16),
@@ -542,7 +626,11 @@ class _WeatherScreen extends State<WeatherScreen> {
                 flex: 1,
                 child: buildDetailCard(
                   icon: CupertinoIcons.cloud_rain,
-                  title: 'Rain chance',
+                  title: 'Precipitation',
+                  value: (() {
+                    if (weatherData == null) return '';
+                    return '${weatherData!.precip} mm/h';
+                  })(),
                 ),
               ),
             ],
@@ -557,14 +645,22 @@ class _WeatherScreen extends State<WeatherScreen> {
                 child: buildDetailCard(
                   icon: CupertinoIcons.text_justifyleft,
                   title: 'Pressure',
+                  value: (() {
+                    if (weatherData == null) return '';
+                    return '${weatherData!.pressure} hpa';
+                  })(),
                 ),
               ),
               SizedBox(width: 16),
               Expanded(
                 flex: 1,
                 child: buildDetailCard(
-                  icon: CupertinoIcons.sun_min,
-                  title: 'UV Index',
+                  icon: CupertinoIcons.drop,
+                  title: 'Humidity',
+                  value: (() {
+                    if (weatherData == null) return '';
+                    return '${weatherData!.humidity} %';
+                  })(),
                 ),
               ),
             ],

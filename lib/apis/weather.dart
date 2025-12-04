@@ -31,10 +31,15 @@ Future<WeatherData> getWeather(String locationId, String cityName) async {
   return WeatherData(
     temp: now['temp'],
     text: now['text'],
+    precip: now['precip'],
     humidity: now['humidity'],
     windDir: now['windDir'],
     windScale: now['windScale'],
     pressure: now['pressure'],
+    feelsLike: now['feelsLike'],
+    windSpeed: now['windSpeed'],
+    obsTime: now['obsTime'],
+    icon: now['icon'],
     cityName: cityName,
   );
 }
