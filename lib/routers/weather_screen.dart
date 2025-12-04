@@ -9,6 +9,7 @@ import '../component/days.dart';
 import '../apis/weather.dart';
 import '../utils/index.dart';
 import '../models/weather.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 const List<String> monthNames = [
   '', // 索引 0 (占位符)
@@ -77,6 +78,7 @@ class _WeatherScreen extends State<WeatherScreen> {
   int pageNavBarIndex = 0;
   WeatherData? weatherData;
   String updateTime = '';
+  List<HourItem>? hourlyList;
 
   // 当前滚动位置
   double currentOffset = 0;
@@ -161,6 +163,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     final {'location': location} = response;
     final {'id': id, 'name': name} = location[0];
     WeatherData now = await getWeather(id, name);
+    List<HourItem> hourly = await getHourWeather(id);
     DateTime date = DateTime.parse(now.obsTime);
 
     String month = monthNames[date.month];
@@ -172,6 +175,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     setState(() {
       updateTime = dateStr;
       weatherData = now;
+      hourlyList = hourly;
     });
     // console(date.month);
   }
@@ -388,7 +392,6 @@ class _WeatherScreen extends State<WeatherScreen> {
 
     // 当前天气状况
     currentWeatherComponent() {
-      Map<String, IconData> iconList = {'104': CupertinoIcons.cloud_fill};
       Map<String, String> weatherList = {'阴': 'Cloudy'};
 
       return AnimatedPositioned(
@@ -400,21 +403,24 @@ class _WeatherScreen extends State<WeatherScreen> {
             AnimatedSize(
               duration: Duration(milliseconds: 400),
               child: (() {
-                if (weatherData == null ||
-                    iconList[weatherData!.icon] == null) {
+                if (weatherData == null) {
                   return Icon(
                     CupertinoIcons.rays,
                     size: weatherIconSize,
                     color: curTempColor,
                   );
                 }
-                return Icon(
-                  iconList[weatherData!.icon],
-                  size: weatherIconSize,
-                  color: curTempColor,
+
+                String path = 'assets/weather/${weatherData!.icon}.svg';
+                return SvgPicture.asset(
+                  path,
+                  width: weatherIconSize, // 可以任意设置宽度和高度，不会失真
+                  height: weatherIconSize,
+                  colorFilter: ColorFilter.mode(curTempColor, BlendMode.srcIn),
                 );
               })(),
             ),
+            SizedBox(height: 14),
             AnimatedDefaultTextStyle(
               duration: Duration(milliseconds: 400),
               style: TextStyle(fontSize: 22, color: curTempColor),
@@ -498,6 +504,7 @@ class _WeatherScreen extends State<WeatherScreen> {
         ),
       ),
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           backgroundComponent(),
           inputComponent(),
@@ -729,7 +736,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                   SizedBox(height: 16, key: navBarKey),
                   detailComponent(),
                   SizedBox(height: 16),
-                  Hourly(),
+                  Hourly(hourlyList: hourlyList ?? []),
                   SizedBox(height: 16),
                   weatherCurveComponent(),
                   SizedBox(height: 16),

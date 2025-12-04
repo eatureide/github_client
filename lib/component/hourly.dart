@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
+import '../models/weather.dart';
 
 class Hourly extends StatefulWidget {
-  const Hourly({super.key});
+  final List<HourItem>? hourlyList;
+  const Hourly({super.key, required List<HourItem> this.hourlyList});
 
   @override
   State<Hourly> createState() => _Hourly();
 }
 
 class _Hourly extends State<Hourly> {
-  itemComponent() {
+  Widget itemComponent(HourItem item) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -20,20 +22,21 @@ class _Hourly extends State<Hourly> {
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           children: [
-            Text('10', style: TextStyle(fontSize: 18)),
-            Text('AM', style: TextStyle(fontSize: 12)),
+            Text('${item.hour} ', style: TextStyle(fontSize: 18)),
+            Text(item.hour <= 12 ? 'AM' : 'PM', style: TextStyle(fontSize: 12)),
           ],
         ),
         SizedBox(height: 4),
         Icon(CupertinoIcons.cloud_sun_fill, size: 38),
         SizedBox(height: 4),
-        Text('10°', style: TextStyle(fontSize: 22)),
+        Text('${item.temp}°', style: TextStyle(fontSize: 22)),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    print(widget.hourlyList);
     return Container(
       padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
       child: Container(
@@ -62,14 +65,14 @@ class _Hourly extends State<Hourly> {
             SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                itemComponent(),
-                itemComponent(),
-                itemComponent(),
-                itemComponent(),
-                itemComponent(),
-                itemComponent()
-              ],
+              children: (() {
+                if (widget.hourlyList == null || widget.hourlyList!.isEmpty) {
+                  return [Text('-')];
+                }
+                return widget.hourlyList!.sublist(0, 6).map((item) {
+                  return itemComponent(item);
+                }).toList();
+              })(),
             ),
           ],
         ),

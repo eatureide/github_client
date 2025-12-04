@@ -27,3 +27,16 @@ class WeatherData {
     required this.icon,
   });
 }
+
+class HourItem {
+  final String fxTime;
+  final String temp;
+  final String icon;
+  final int hour;
+  HourItem({
+    required this.fxTime,
+    required this.temp,
+    required this.icon,
+    required this.hour,
+  });
+}
