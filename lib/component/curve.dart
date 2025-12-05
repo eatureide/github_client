@@ -1,8 +1,19 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../models/weather.dart';
+import 'package:intl/intl.dart';
 
 class CurveComponent extends StatefulWidget {
-  const CurveComponent({super.key});
+  final String tempMax;
+  final String tempMin;
+  final List<DayItem>? daysList;
+
+  const CurveComponent({
+    super.key,
+    required this.tempMax,
+    required this.tempMin,
+    required this.daysList,
+  });
 
   @override
   State<CurveComponent> createState() => _CurveComponent();
@@ -28,23 +39,28 @@ class _CurveComponent extends State<CurveComponent> {
     setState(() {
       Future.delayed(Duration(milliseconds: 300), () {
         spots = [
-          FlSpot(1, 1),
-          FlSpot(2, 1),
-          FlSpot(3, 3),
-          FlSpot(4, 3),
-          FlSpot(5, 2),
-          FlSpot(6, 2),
-          FlSpot(7, 1),
+          FlSpot(1, widget.daysList![0].tempMaxInt.toDouble()),
+          FlSpot(2, widget.daysList![1].tempMaxInt.toDouble()),
+          FlSpot(3, widget.daysList![2].tempMaxInt.toDouble()),
+          FlSpot(4, widget.daysList![3].tempMaxInt.toDouble()),
+          FlSpot(5, widget.daysList![4].tempMaxInt.toDouble()),
+          FlSpot(6, widget.daysList![5].tempMaxInt.toDouble()),
+          FlSpot(7, widget.daysList![6].tempMaxInt.toDouble()),
         ];
       });
     });
   }
 
   @override
+  didUpdateWidget(covariant CurveComponent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       height: 220,
-      color: Colors.transparent,
+      color: const Color.fromARGB(0, 0, 0, 0),
       child: LineChart(
         duration: Duration(milliseconds: 1000), // 设置动画持续时间为 800ms
         curve: Curves.easeInOut, // 设置动画曲线为缓入缓出
@@ -110,8 +126,6 @@ class _CurveComponent extends State<CurveComponent> {
                 show: true,
                 checkToShowDot: (spot, barData) {
                   // 例如：只显示最后一个点
-                  // print(spot.x);
-                  // print(barData.spots.last.x);
                   return spot.x == barData.spots.last.x;
                 },
                 getDotPainter: (spot, percent, barData, index) {
@@ -141,7 +155,6 @@ class _CurveComponent extends State<CurveComponent> {
 
           // 2. 标题/轴线配置 (重点修改这里)
           titlesData: FlTitlesData(
-            // 隐藏顶部、底部和右侧标题
             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             bottomTitles: AxisTitles(
@@ -149,11 +162,13 @@ class _CurveComponent extends State<CurveComponent> {
                 showTitles: true,
                 reservedSize: 40,
                 getTitlesWidget: (value, meta) {
-                  String text = week[value.toInt() - 1];
+                  String dateStr = widget.daysList![value.toInt() - 1].fxDate;
+                  DateTime date = DateTime.parse(dateStr);
+                  String weekdayAbbreviation = DateFormat('E').format(date);
                   return Padding(
-                    padding: EdgeInsets.only(top: 6),
+                    padding: EdgeInsets.only(top: 10),
                     child: Text(
-                      text.toString(),
+                      weekdayAbbreviation,
                       style: TextStyle(fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
@@ -168,15 +183,11 @@ class _CurveComponent extends State<CurveComponent> {
                 reservedSize: 40, // 为标签预留的宽度
                 showTitles: true, // 必须设置为 true 才能显示标签
                 getTitlesWidget: (value, meta) {
-                  List<String> tempArr = ['-10°', '0', '10°'];
-                  String text = '';
-                  try {
-                    text = tempArr[value.toInt() - 1];
-                  } catch (e) {
-                    text = '';
-                  }
+                  String text = value.toInt().toString();
+                  if (value == 0) text = '';
+                  if (value >= double.parse(widget.tempMax) + 20) text = '';
                   return Text(
-                    text.toString(),
+                    text == '' ? '' : '$text°',
                     style: TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   );
@@ -204,7 +215,7 @@ class _CurveComponent extends State<CurveComponent> {
 
           // 5. 范围配置 (可选，如果不设置，fl_chart会根据数据自动调整)
           minY: 0,
-          maxY: 4,
+          maxY: widget.tempMax == '' ? 0 : double.parse(widget.tempMax) + 20,
         ),
       ),
     );

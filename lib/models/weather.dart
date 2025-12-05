@@ -40,3 +40,15 @@ class HourItem {
     required this.hour,
   });
 }
+
+class DayItem {
+  final String tempMax;
+  final int tempMaxInt;
+  final String fxDate;
+
+  DayItem({
+    required this.tempMax,
+    required this.fxDate,
+    required this.tempMaxInt,
+  });
+}

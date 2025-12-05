@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../utils/index.dart';
 import '../models/weather.dart';
 
+
 Dio dio = Dio();
 const String apiKey = '3474b8632e2d450abe73bcff2a5bb6c7'; // 和风天气key
 
@@ -51,6 +52,30 @@ Future<Map<String, dynamic>> getCityId(String city) async {
   return parseResponse;
 }
 
+Future<List<DayItem>> get7DaysWeather(String locationId) async {
+  String url = 'https://devapi.qweather.com/v7/weather/7d';
+  final response = await dio.get(
+    url,
+    queryParameters: {"location": locationId, "key": apiKey},
+  );
+  final Map<String, dynamic> parseResponse = response.data;
+  if (parseResponse['code'] != '200') {
+    throw Exception('Failed to load city ID');
+  }
+  List<dynamic> daily = parseResponse['daily'];
+
+  List<DayItem> listDay = daily.map((item) {
+    String tempMax = item['tempMax'];
+    return DayItem(
+      fxDate: item['fxDate'],
+      tempMaxInt: int.tryParse(tempMax) ?? 0,
+      tempMax: tempMax,
+    );
+  }).toList();
+
+  return listDay;
+}
+
 Future<WeatherData> getWeather(String locationId, String cityName) async {
   String url = 'https://devapi.qweather.com/v7/weather/now';
   final data = await dio.get(
@@ -59,7 +84,7 @@ Future<WeatherData> getWeather(String locationId, String cityName) async {
   );
   final dataJSON = jsonDecode(data.toString());
   final now = dataJSON['now'];
-  console(locationId);
+  // console(locationId);
   return WeatherData(
     temp: now['temp'],
     text: now['text'],

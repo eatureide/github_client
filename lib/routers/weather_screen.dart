@@ -144,6 +144,10 @@ class _WeatherScreen extends State<WeatherScreen> {
   final GlobalKey headerKey = GlobalKey();
   final GlobalKey navBarKey = GlobalKey();
 
+  String dayTempMax = '';
+  String dayTempMin = '';
+  List<DayItem>? daysList;
+
   @override
   initState() {
     super.initState();
@@ -165,6 +169,22 @@ class _WeatherScreen extends State<WeatherScreen> {
     WeatherData now = await getWeather(id, name);
     List<HourItem> hourly = await getHourWeather(id);
     DateTime date = DateTime.parse(now.obsTime);
+    List<DayItem> newDaysList = await get7DaysWeather(id);
+
+    DayItem getMaxTemp = newDaysList.reduce((currentMax, nextItem) {
+      return nextItem.tempMaxInt > currentMax.tempMaxInt
+          ? nextItem
+          : currentMax;
+    });
+
+    DayItem getMinTemp = newDaysList.reduce((currentMax, nextItem) {
+      return nextItem.tempMaxInt < currentMax.tempMaxInt
+          ? nextItem
+          : currentMax;
+    });
+
+    // print(getMaxTemp.tempMax);
+    // print(getMinTemp.tempMax);
 
     String month = monthNames[date.month];
     int day = date.day;
@@ -173,9 +193,12 @@ class _WeatherScreen extends State<WeatherScreen> {
     String dateStr = '$month $day,  $hour:$min';
 
     setState(() {
+      dayTempMax = getMaxTemp.tempMax;
+      dayTempMin = getMinTemp.tempMax;
       updateTime = dateStr;
       weatherData = now;
       hourlyList = hourly;
+      daysList = newDaysList;
     });
     // console(date.month);
   }
@@ -392,7 +415,7 @@ class _WeatherScreen extends State<WeatherScreen> {
 
     // 当前天气状况
     currentWeatherComponent() {
-      Map<String, String> weatherList = {'阴': 'Cloudy'};
+      Map<String, String> weatherList = {'阴': 'Cloudy', '晴': 'Sunny'};
 
       return AnimatedPositioned(
         duration: Duration(milliseconds: 300),
@@ -411,7 +434,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                   );
                 }
 
-                String path = 'assets/weather/${weatherData!.icon}.svg';
+                String path = 'assets/weather/${weatherData!.icon}-fill.svg';
                 return SvgPicture.asset(
                   path,
                   width: weatherIconSize, // 可以任意设置宽度和高度，不会失真
@@ -430,7 +453,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                 child: (() {
                   if (weatherData == null ||
                       weatherList[weatherData!.text] == null) {
-                    return Text('');
+                    return Text(weatherData!.text);
                   }
                   return Text(weatherList[weatherData!.text] as String);
                 })(),
@@ -704,7 +727,13 @@ class _WeatherScreen extends State<WeatherScreen> {
                 Text('Day forecast', style: TextStyle(fontSize: 14)),
               ],
             ),
-            CurveComponent(),
+            daysList == null
+                ? Text('')
+                : CurveComponent(
+                    tempMax: dayTempMax,
+                    tempMin: dayTempMin,
+                    daysList: daysList,
+                  ),
           ],
         ),
       ),
