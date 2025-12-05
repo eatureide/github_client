@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
+import '../models/weather.dart';
+import '../utils/index.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Days extends StatefulWidget {
-  const Days({super.key});
+  final List<DayItem>? daysList;
+  const Days({super.key, required this.daysList});
 
   @override
   State<Days> createState() => _Days();
 }
 
 class _Days extends State<Days> {
-  buildItem() {
+  buildItem(DayItem item) {
+    DateTime date = DateTime.parse(item.fxDate);
+    String month = monthAbbreviationMap[date.month.toInt()] ?? '';
+    String path = 'assets/weather/${item.iconDay}.svg';
     return Container(
       height: 84,
       margin: EdgeInsets.only(bottom: 20),
@@ -30,13 +37,13 @@ class _Days extends State<Days> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Today',
+                      '$month, ${date.day}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text('3°', style: TextStyle(fontSize: 16)),
+                    Text('${item.tempMax}°', style: TextStyle(fontSize: 16)),
                   ],
                 ),
                 SizedBox(height: 6),
@@ -44,14 +51,14 @@ class _Days extends State<Days> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Cloudy and Sunny',
+                      item.textDay,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Color.fromARGB(255, 73, 70, 73),
                       ),
                     ),
-                    Text('-2°', style: TextStyle(fontSize: 16)),
+                    Text('${item.tempMin}°', style: TextStyle(fontSize: 16)),
                   ],
                 ),
               ],
@@ -64,7 +71,7 @@ class _Days extends State<Days> {
             color: Color.fromARGB(255, 75, 69, 77),
           ),
           SizedBox(width: 12),
-          Icon(CupertinoIcons.cloud_sun_fill, size: 46),
+          SvgPicture.asset(path, width: 46, height: 46),
           SizedBox(width: 12),
         ],
       ),
@@ -73,19 +80,16 @@ class _Days extends State<Days> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.daysList == null) {
+      return Text('');
+    }
+    print(widget.daysList);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 12),
       child: Column(
-        children: [
-          buildItem(),
-          buildItem(),
-          buildItem(),
-          buildItem(),
-          buildItem(),
-          buildItem(),
-          buildItem(),
-          buildItem(),
-        ],
+        children: widget.daysList!.map((item) {
+          return buildItem(item) as Widget;
+        }).toList(),
       ),
     );
   }

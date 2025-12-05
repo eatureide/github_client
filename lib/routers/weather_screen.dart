@@ -11,22 +11,6 @@ import '../utils/index.dart';
 import '../models/weather.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-const List<String> monthNames = [
-  '', // 索引 0 (占位符)
-  'January', // 索引 1
-  'February', // 索引 2
-  'March', // 索引 3
-  'April', // 索引 4
-  'May', // 索引 5
-  'June', // 索引 6
-  'July', // 索引 7
-  'August', // 索引 8
-  'September', // 索引 9
-  'October', // 索引 10
-  'November', // 索引 11
-  'December', // 索引 12
-];
-
 // 继承自 SliverPersistentHeaderDelegate 的类，用于实现 Header 的布局和变化逻辑
 class StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   final double minHeight;
@@ -772,7 +756,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                   SizedBox(height: 16),
                   SunRiseAndSet(daysList: daysList), // 日出日落时间
                   SizedBox(height: 16),
-                  Days(),
+                  Days(daysList: daysList),
                   SizedBox(height: 100),
                 ],
               ),

@@ -40,22 +40,28 @@ class HourItem {
     required this.temp,
     required this.icon,
     required this.hour,
-    required this.pop
+    required this.pop,
   });
 }
 
 class DayItem {
+  final String tempMin;
   final String tempMax;
   final int tempMaxInt;
   final String fxDate;
   final String sunrise;
   final String sunset;
+  final String iconDay;
+  final String textDay;
 
   DayItem({
+    required this.tempMin,
     required this.sunrise,
     required this.sunset,
     required this.tempMax,
     required this.fxDate,
     required this.tempMaxInt,
+    required this.iconDay,
+    required this.textDay
   });
 }

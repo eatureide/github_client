@@ -55,9 +55,7 @@ class _SunRiseAndSet extends State<SunRiseAndSet> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.daysList == null) {
-      return Text('');
-    }
+    if (widget.daysList == null) return Text('');
     return Padding(
       padding: EdgeInsetsGeometry.symmetric(horizontal: 12),
       child: Row(

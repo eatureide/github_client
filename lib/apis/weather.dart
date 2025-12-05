@@ -67,9 +67,12 @@ Future<List<DayItem>> get7DaysWeather(String locationId) async {
   List<DayItem> listDay = daily.map((item) {
     String tempMax = item['tempMax'];
     return DayItem(
+      tempMin: item['tempMin'],
       sunrise: item['sunrise'],
       sunset: item['sunset'],
       fxDate: item['fxDate'],
+      iconDay: item['iconDay'],
+      textDay:item['textDay'],
       tempMaxInt: int.tryParse(tempMax) ?? 0,
       tempMax: tempMax,
     );
