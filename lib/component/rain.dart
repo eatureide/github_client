@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
+import '../models/weather.dart';
 
 class ChanceOfRain extends StatefulWidget {
-  const ChanceOfRain({super.key});
+  final List<HourItem>? hourlyList;
+  const ChanceOfRain({super.key, required List<HourItem> this.hourlyList});
 
   @override
   State<ChanceOfRain> createState() => _ChanceOfRain();
 }
 
 class _ChanceOfRain extends State<ChanceOfRain> {
-  itemComponent() {
+  itemComponent(HourItem item) {
     return Container(
       margin: EdgeInsets.only(bottom: 14),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('7PM'),
+          Text('${item.hour} ${item.hour >= 12 ? 'PM' : 'AM'}'),
           SizedBox(width: 12),
           Expanded(
             flex: 1,
             child: LinearProgressIndicator(
-              value: 0.5,
+              value: double.parse(item.pop) / 100,
               minHeight: 28,
               backgroundColor: Color.fromARGB(255, 249, 237, 254),
               color: Color.fromARGB(255, 134, 38, 208),
@@ -29,7 +31,7 @@ class _ChanceOfRain extends State<ChanceOfRain> {
             ),
           ),
           SizedBox(width: 12),
-          Text('27%'),
+          SizedBox(width: 25, child: Text('${item.pop}%')),
         ],
       ),
     );
@@ -62,11 +64,15 @@ class _ChanceOfRain extends State<ChanceOfRain> {
                 Text('Changce of Rain', style: TextStyle(fontSize: 14)),
               ],
             ),
-            SizedBox(height: 28),
-            itemComponent(),
-            itemComponent(),
-            itemComponent(),
-            itemComponent(),
+            SizedBox(height: 24),
+
+            widget.hourlyList!.isEmpty
+                ? Text('')
+                : Column(
+                    children: widget.hourlyList!.sublist(0, 6).map((item) {
+                      return itemComponent(item) as Widget;
+                    }).toList(),
+                  ),
           ],
         ),
       ),

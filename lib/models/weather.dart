@@ -33,11 +33,14 @@ class HourItem {
   final String temp;
   final String icon;
   final int hour;
+  final String pop;
+
   HourItem({
     required this.fxTime,
     required this.temp,
     required this.icon,
     required this.hour,
+    required this.pop
   });
 }
 
@@ -45,8 +48,12 @@ class DayItem {
   final String tempMax;
   final int tempMaxInt;
   final String fxDate;
+  final String sunrise;
+  final String sunset;
 
   DayItem({
+    required this.sunrise,
+    required this.sunset,
     required this.tempMax,
     required this.fxDate,
     required this.tempMaxInt,

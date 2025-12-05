@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import '../utils/index.dart';
 import '../models/weather.dart';
 
-
 Dio dio = Dio();
 const String apiKey = '3474b8632e2d450abe73bcff2a5bb6c7'; // 和风天气key
 
@@ -30,6 +29,7 @@ Future<List<HourItem>> getHourWeather(String locationId) async {
 
     return HourItem(
       hour: hour,
+      pop: item['pop'],
       fxTime: item['fxTime'],
       icon: item['icon'],
       temp: item['temp'],
@@ -67,6 +67,8 @@ Future<List<DayItem>> get7DaysWeather(String locationId) async {
   List<DayItem> listDay = daily.map((item) {
     String tempMax = item['tempMax'];
     return DayItem(
+      sunrise: item['sunrise'],
+      sunset: item['sunset'],
       fxDate: item['fxDate'],
       tempMaxInt: int.tryParse(tempMax) ?? 0,
       tempMax: tempMax,

@@ -152,7 +152,7 @@ class _WeatherScreen extends State<WeatherScreen> {
   initState() {
     super.initState();
     scrollviewController.addListener(pageScroll);
-    requestCityData();
+    requestCityData('广州');
   }
 
   @override
@@ -162,8 +162,8 @@ class _WeatherScreen extends State<WeatherScreen> {
     statusBarHeight = mediaQueryData.padding.top;
   }
 
-  requestCityData() async {
-    Map<String, dynamic> response = await getCityId('广州');
+  requestCityData(String cityName) async {
+    Map<String, dynamic> response = await getCityId(cityName);
     final {'location': location} = response;
     final {'id': id, 'name': name} = location[0];
     WeatherData now = await getWeather(id, name);
@@ -451,9 +451,8 @@ class _WeatherScreen extends State<WeatherScreen> {
                 opacity: weatherIconFontOpacity,
                 duration: Duration(milliseconds: 300),
                 child: (() {
-                  if (weatherData == null ||
-                      weatherList[weatherData!.text] == null) {
-                    return Text(weatherData!.text);
+                  if (weatherData == null) {
+                    return Text('-');
                   }
                   return Text(weatherList[weatherData!.text] as String);
                 })(),
@@ -769,9 +768,9 @@ class _WeatherScreen extends State<WeatherScreen> {
                   SizedBox(height: 16),
                   weatherCurveComponent(),
                   SizedBox(height: 16),
-                  ChanceOfRain(), // 降雨率
+                  ChanceOfRain(hourlyList: hourlyList ?? []), // 降雨率
                   SizedBox(height: 16),
-                  SunRiseAndSet(), // 日出日落时间
+                  SunRiseAndSet(daysList: daysList), // 日出日落时间
                   SizedBox(height: 16),
                   Days(),
                   SizedBox(height: 100),
