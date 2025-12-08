@@ -7,7 +7,7 @@ Dio dio = Dio();
 const String apiKey = '3474b8632e2d450abe73bcff2a5bb6c7'; // 和风天气key
 
 Future<List<HourItem>> getHourWeather(String locationId) async {
-  String url = 'https://devapi.qweather.com/v7/weather/24h';
+  String url = 'https://k8359588yt.re.qweatherapi.com/v7/weather/24h';
   Response<dynamic> response = await dio.get(
     url,
     queryParameters: {"location": locationId, "key": apiKey},
@@ -40,7 +40,7 @@ Future<List<HourItem>> getHourWeather(String locationId) async {
 }
 
 Future<Map<String, dynamic>> getCityId(String city) async {
-  String url = 'https://geoapi.qweather.com/v2/city/lookup';
+  String url = 'https://k8359588yt.re.qweatherapi.com/geo/v2/city/lookup';
   Response<dynamic> response = await dio.get(
     url,
     queryParameters: {"location": city, "key": apiKey},
@@ -53,7 +53,7 @@ Future<Map<String, dynamic>> getCityId(String city) async {
 }
 
 Future<List<DayItem>> get7DaysWeather(String locationId) async {
-  String url = 'https://devapi.qweather.com/v7/weather/7d';
+  String url = 'https://k8359588yt.re.qweatherapi.com/v7/weather/7d';
   final response = await dio.get(
     url,
     queryParameters: {"location": locationId, "key": apiKey},
@@ -82,7 +82,7 @@ Future<List<DayItem>> get7DaysWeather(String locationId) async {
 }
 
 Future<WeatherData> getWeather(String locationId, String cityName) async {
-  String url = 'https://devapi.qweather.com/v7/weather/now';
+  String url = 'https://k8359588yt.re.qweatherapi.com/v7/weather/now';
   final data = await dio.get(
     url,
     queryParameters: {"location": locationId, "key": apiKey},
@@ -107,7 +107,7 @@ Future<WeatherData> getWeather(String locationId, String cityName) async {
 }
 
 Future<String> getCityName({required String locationStr}) async {
-  String url = 'https://geoapi.qweather.com/v2/city/lookup';
+  String url = 'https://k8359588yt.re.qweatherapi.com/geo/v2/city/lookup';
   final data = await dio.get(
     url,
     queryParameters: {"location": locationStr, "key": apiKey},
