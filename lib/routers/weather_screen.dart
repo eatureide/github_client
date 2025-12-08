@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../component/curve.dart';
 import '../component/rain.dart';
 import '../component/sun.dart';
@@ -10,7 +11,6 @@ import '../component/days.dart';
 import '../apis/weather.dart';
 import '../utils/index.dart';
 import '../models/weather.dart';
-
 
 // 继承自 SliverPersistentHeaderDelegate 的类，用于实现 Header 的布局和变化逻辑
 class StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -137,7 +137,8 @@ class _WeatherScreen extends State<WeatherScreen> {
   initState() {
     super.initState();
     scrollviewController.addListener(pageScroll);
-    requestCityData('广州');
+    checkInputCache();
+    requestCityData();
   }
 
   @override
@@ -147,7 +148,20 @@ class _WeatherScreen extends State<WeatherScreen> {
     statusBarHeight = mediaQueryData.padding.top;
   }
 
-  requestCityData(String cityName) async {
+  checkInputCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    String cityName = prefs.getString('cityName') ?? '';
+    if (cityName != '') requestCityData(cityName);
+  }
+
+  // 存储数据
+  Future<void> saveSetting(String cityName) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('cityName', cityName);
+  }
+
+  requestCityData([String cityName = '']) async {
+    if (cityName == '') cityName = '北京';
     Map<String, dynamic> response = await getCityId(cityName);
     final {'location': location} = response;
     final {'id': id, 'name': name} = location[0];
@@ -174,8 +188,10 @@ class _WeatherScreen extends State<WeatherScreen> {
     int min = date.minute;
     String dateStr =
         '$month ${timeFormatAddZero(day)},  ${timeFormatAddZero(hour)}:${timeFormatAddZero(min)}';
+    saveSetting(cityName);
 
     setState(() {
+      cityController.text = cityName;
       dayTempMax = getMaxTemp.tempMax;
       dayTempMin = getMinTemp.tempMax;
       updateTime = dateStr;
@@ -183,7 +199,6 @@ class _WeatherScreen extends State<WeatherScreen> {
       hourlyList = hourly;
       daysList = newDaysList;
     });
-    // console(date.month);
   }
 
   // 根据页面位置控制头部动画细节
@@ -256,7 +271,7 @@ class _WeatherScreen extends State<WeatherScreen> {
         footerNavBarBottom = footerNavBarBottomMax;
         footerRadius = footerRadiusMin;
       }
-      if (!overlapping && direction != 'down') {
+      if (overlapping && direction != 'down') {
         footerNavBarBottom = footerNavBarBottomOriginal;
         footerBottom = footerBottomOriginal;
         footerRadius = footerRadiusMax;
@@ -330,6 +345,7 @@ class _WeatherScreen extends State<WeatherScreen> {
             controller: cityController,
             style: TextStyle(color: curTempColor, fontSize: 22),
             cursorColor: curTempColor,
+            onSubmitted: (e) => requestCityData(cityController.text),
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: 'Search City',
@@ -338,7 +354,9 @@ class _WeatherScreen extends State<WeatherScreen> {
               fillColor: Colors.transparent,
               suffixIcon: IconButton(
                 icon: Icon(Icons.search, color: curTempColor),
-                onPressed: () {},
+                onPressed: () {
+                  requestCityData(cityController.text);
+                },
               ),
             ),
           ),

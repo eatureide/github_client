@@ -51,7 +51,7 @@ class _Days extends State<Days> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                     '${weatherList[item.textDay]}',
+                     '${weatherList[item.textDay]??item.textDay}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

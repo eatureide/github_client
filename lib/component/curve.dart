@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../models/weather.dart';
 import 'package:intl/intl.dart';
+import '../models/weather.dart';
 
 class CurveComponent extends StatefulWidget {
   final String tempMax;
@@ -105,7 +105,7 @@ class _CurveComponent extends State<CurveComponent> {
               getTooltipItems: (touchedSpots) {
                 return touchedSpots.map((LineBarSpot touchedSpot) {
                   return LineTooltipItem(
-                    touchedSpot.x.toString(),
+                    widget.daysList![touchedSpot.x.toInt() - 1].tempMax,
                     const TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -205,12 +205,10 @@ class _CurveComponent extends State<CurveComponent> {
             drawVerticalLine: false,
             drawHorizontalLine: true,
             // 可选：进一步自定义水平网格线样式
-            getDrawingHorizontalLine: (value) {
-              return FlLine(
-                color: Color.fromARGB(255, 204, 193, 221), // 线的颜色
-                strokeWidth: 3, // 线的粗细
-              );
-            },
+            getDrawingHorizontalLine: (value) => FlLine(
+              color: Color.fromARGB(255, 204, 193, 221), // 线的颜色
+              strokeWidth: 3, // 线的粗细
+            ),
           ),
 
           // 5. 范围配置 (可选，如果不设置，fl_chart会根据数据自动调整)
