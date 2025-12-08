@@ -3,6 +3,7 @@ import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
 import '../models/weather.dart';
 import '../utils/index.dart';
+import '../utils/index.dart';
 
 class SunRiseAndSet extends StatefulWidget {
   final List<DayItem>? daysList;
@@ -19,6 +20,8 @@ class _SunRiseAndSet extends State<SunRiseAndSet> {
     required IconData icon,
   }) {
     DateTime result = combineTimeWithToday(subTitle);
+    String hourStr = timeFormatAddZero(result.hour);
+    String minuteStr = timeFormatAddZero(result.minute);
     return Container(
       height: 65,
       padding: EdgeInsets.all(12),
@@ -43,7 +46,7 @@ class _SunRiseAndSet extends State<SunRiseAndSet> {
             children: [
               Text(title),
               Text(
-                '${result.hour}:${result.minute} ${result.hour >= 12 ? 'PM' : 'AM'}',
+                '$hourStr:$minuteStr ${result.hour >= 12 ? 'PM' : 'AM'}',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ],

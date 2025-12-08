@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../component/curve.dart';
 import '../component/rain.dart';
 import '../component/sun.dart';
@@ -9,7 +10,7 @@ import '../component/days.dart';
 import '../apis/weather.dart';
 import '../utils/index.dart';
 import '../models/weather.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 
 // 继承自 SliverPersistentHeaderDelegate 的类，用于实现 Header 的布局和变化逻辑
 class StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -167,14 +168,12 @@ class _WeatherScreen extends State<WeatherScreen> {
           : currentMax;
     });
 
-    // print(getMaxTemp.tempMax);
-    // print(getMinTemp.tempMax);
-
     String month = monthNames[date.month];
     int day = date.day;
     int hour = date.hour;
     int min = date.minute;
-    String dateStr = '$month $day,  $hour:$min';
+    String dateStr =
+        '$month ${timeFormatAddZero(day)},  ${timeFormatAddZero(hour)}:${timeFormatAddZero(min)}';
 
     setState(() {
       dayTempMax = getMaxTemp.tempMax;
@@ -399,8 +398,6 @@ class _WeatherScreen extends State<WeatherScreen> {
 
     // 当前天气状况
     currentWeatherComponent() {
-      Map<String, String> weatherList = {'阴': 'Cloudy', '晴': 'Sunny'};
-
       return AnimatedPositioned(
         duration: Duration(milliseconds: 300),
         bottom: weatherIconBottom,

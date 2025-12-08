@@ -25,7 +25,7 @@ class _Hourly extends State<Hourly> {
           textBaseline: TextBaseline.alphabetic,
           children: [
             Text(
-              index == 0 ? 'Now' : '${item.hour} ',
+              index == 0 ? 'Now' : '${item.hourStr} ',
               style: TextStyle(fontSize: 18),
             ),
             index == 0

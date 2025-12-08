@@ -33,9 +33,11 @@ class HourItem {
   final String temp;
   final String icon;
   final int hour;
+  final String hourStr;
   final String pop;
 
   HourItem({
+    required this.hourStr,
     required this.fxTime,
     required this.temp,
     required this.icon,

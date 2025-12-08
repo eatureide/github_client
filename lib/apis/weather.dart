@@ -4,10 +4,13 @@ import '../utils/index.dart';
 import '../models/weather.dart';
 
 Dio dio = Dio();
-const String apiKey = '3474b8632e2d450abe73bcff2a5bb6c7'; // 和风天气key
+String apiKey = '3474b8632e2d450abe73bcff2a5bb6c7'; // 和风天气key
+String apiHost = 'https://k8359588yt.re.qweatherapi.com'; // 和风天气host
 
+
+// 根据城市id获取当前城市24小时的天气状况
 Future<List<HourItem>> getHourWeather(String locationId) async {
-  String url = 'https://k8359588yt.re.qweatherapi.com/v7/weather/24h';
+  String url = '$apiHost/v7/weather/24h';
   Response<dynamic> response = await dio.get(
     url,
     queryParameters: {"location": locationId, "key": apiKey},
@@ -18,16 +21,20 @@ Future<List<HourItem>> getHourWeather(String locationId) async {
   }
   List<dynamic> hourly = parseResponse['hourly'];
 
+  // 得到小时
   List<HourItem> listHour = hourly.map((item) {
     String fxTime = item['fxTime'];
-
-    // 步骤 1: 找到偏移量开始的位置
     int offsetIndex = fxTime.lastIndexOf('+');
-    // 步骤 2: 截取不包含偏移量的部分 (如果找不到 + 号，则截取整个字符串)
     fxTime = (offsetIndex != -1) ? fxTime.substring(0, offsetIndex) : fxTime;
     int hour = DateTime.parse(fxTime).hour;
 
+    String hourStr = (() {
+      if(hour<=9) return '0$hour';
+      return hour.toString();
+    })();
+
     return HourItem(
+      hourStr: hourStr,
       hour: hour,
       pop: item['pop'],
       fxTime: item['fxTime'],
@@ -39,8 +46,9 @@ Future<List<HourItem>> getHourWeather(String locationId) async {
   return listHour;
 }
 
+// 根据城市中文名获取城市id
 Future<Map<String, dynamic>> getCityId(String city) async {
-  String url = 'https://k8359588yt.re.qweatherapi.com/geo/v2/city/lookup';
+  String url = '$apiHost/geo/v2/city/lookup';
   Response<dynamic> response = await dio.get(
     url,
     queryParameters: {"location": city, "key": apiKey},
@@ -52,8 +60,9 @@ Future<Map<String, dynamic>> getCityId(String city) async {
   return parseResponse;
 }
 
+// 获取包含今日七天的天气数据
 Future<List<DayItem>> get7DaysWeather(String locationId) async {
-  String url = 'https://k8359588yt.re.qweatherapi.com/v7/weather/7d';
+  String url = '$apiHost/v7/weather/7d';
   final response = await dio.get(
     url,
     queryParameters: {"location": locationId, "key": apiKey},
@@ -63,7 +72,6 @@ Future<List<DayItem>> get7DaysWeather(String locationId) async {
     throw Exception('Failed to load city ID');
   }
   List<dynamic> daily = parseResponse['daily'];
-
   List<DayItem> listDay = daily.map((item) {
     String tempMax = item['tempMax'];
     return DayItem(
@@ -81,8 +89,9 @@ Future<List<DayItem>> get7DaysWeather(String locationId) async {
   return listDay;
 }
 
+// 获取当日天气状况
 Future<WeatherData> getWeather(String locationId, String cityName) async {
-  String url = 'https://k8359588yt.re.qweatherapi.com/v7/weather/now';
+  String url = '$apiHost/v7/weather/now';
   final data = await dio.get(
     url,
     queryParameters: {"location": locationId, "key": apiKey},
@@ -106,8 +115,9 @@ Future<WeatherData> getWeather(String locationId, String cityName) async {
   );
 }
 
+// 获取城市名称
 Future<String> getCityName({required String locationStr}) async {
-  String url = 'https://k8359588yt.re.qweatherapi.com/geo/v2/city/lookup';
+  String url = '$apiHost/geo/v2/city/lookup';
   final data = await dio.get(
     url,
     queryParameters: {"location": locationStr, "key": apiKey},

@@ -2,6 +2,8 @@ import 'dart:developer';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
+Map<String, String> weatherList = {'阴': 'Cloudy', '晴': 'Sunny'};
+
 const Map<int, String> monthAbbreviationMap = {
   1: 'Jan', // January
   2: 'Feb', // February
@@ -51,4 +53,10 @@ DateTime combineTimeWithToday(String timeString) {
   String todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
   String fullDateTimeString = '$todayDate $timeString:00'; // 加上秒 :00
   return DateTime.parse(fullDateTimeString);
+}
+
+// 判断日期是否应该加0
+String timeFormatAddZero(int timeInt) {
+  if (timeInt <= 9) return '0${timeInt.toString()}';
+  return timeInt.toString();
 }
