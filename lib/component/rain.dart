@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
 import '../models/weather.dart';
+import '../utils/index.dart';
 
 class ChanceOfRain extends StatefulWidget {
   final List<HourItem>? hourlyList;
@@ -18,7 +19,7 @@ class _ChanceOfRain extends State<ChanceOfRain> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('${item.hour} ${item.hour >= 12 ? 'PM' : 'AM'}'),
+          Text('${item.time12Hour} ${item.hour >= 12 ? 'PM' : 'AM'}'),
           SizedBox(width: 12),
           Expanded(
             flex: 1,

@@ -35,8 +35,10 @@ class HourItem {
   final int hour;
   final String hourStr;
   final String pop;
+  final String time12Hour;
 
   HourItem({
+    required this.time12Hour,
     required this.hourStr,
     required this.fxTime,
     required this.temp,
@@ -64,6 +66,6 @@ class DayItem {
     required this.fxDate,
     required this.tempMaxInt,
     required this.iconDay,
-    required this.textDay
+    required this.textDay,
   });
 }

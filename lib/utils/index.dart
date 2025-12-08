@@ -2,7 +2,12 @@ import 'dart:developer';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-Map<String, String> weatherList = {'阴': 'Cloudy', '晴': 'Sunny'};
+Map<String, String> weatherList = {
+  '阴': 'Cloudy',
+  '晴': 'Sunny',
+  '多云': 'Cloudy',
+  '小雨': 'Rain',
+};
 
 const Map<int, String> monthAbbreviationMap = {
   1: 'Jan', // January
