@@ -3,7 +3,6 @@ import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
 import '../models/weather.dart';
 import '../utils/index.dart';
-import '../utils/index.dart';
 
 class SunRiseAndSet extends StatefulWidget {
   final List<DayItem>? daysList;

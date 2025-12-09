@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'curve.dart';
+import 'package:flutter/rendering.dart';
 import '../../component/rain.dart';
 import '../../component/sun.dart';
 import '../../component/hourly.dart';
@@ -95,6 +96,7 @@ class _WeatherScreen extends State<WeatherScreen> {
   final GlobalKey navBarKey = GlobalKey();
   final GlobalKey dayForecastKey = GlobalKey();
   final GlobalKey daysKey = GlobalKey();
+  final GlobalKey topKey = GlobalKey();
 
   String dayTempMax = '';
   String dayTempMin = '';
@@ -138,23 +140,18 @@ class _WeatherScreen extends State<WeatherScreen> {
     List<DayItem> newDaysList = await get7DaysWeather(id);
 
     DayItem getMaxTemp = newDaysList.reduce((currentMax, nextItem) {
-      return nextItem.tempMaxInt > currentMax.tempMaxInt
-          ? nextItem
-          : currentMax;
+      return nextItem.tempMaxInt > currentMax.tempMaxInt ? nextItem : currentMax;
     });
 
     DayItem getMinTemp = newDaysList.reduce((currentMax, nextItem) {
-      return nextItem.tempMaxInt < currentMax.tempMaxInt
-          ? nextItem
-          : currentMax;
+      return nextItem.tempMaxInt < currentMax.tempMaxInt ? nextItem : currentMax;
     });
 
     String month = monthNames[date.month];
     int day = date.day;
     int hour = date.hour;
     int min = date.minute;
-    String dateStr =
-        '$month ${timeFormatAddZero(day)},  ${timeFormatAddZero(hour)}:${timeFormatAddZero(min)}';
+    String dateStr = '$month ${timeFormatAddZero(day)},  ${timeFormatAddZero(hour)}:${timeFormatAddZero(min)}';
     saveSetting(cityName);
 
     setState(() {
@@ -199,13 +196,8 @@ class _WeatherScreen extends State<WeatherScreen> {
     double newPosition = weatherIconBottomOriginal - scrollOffset;
     double newSize = weatherIconSizeOriginal - scrollOffset;
 
-    if (newPosition < weatherIconBottomMax) {
-      newPosition = weatherIconBottomMax;
-    }
-
-    if (newSize < weatherIconSizeMax) {
-      newSize = weatherIconSizeMax;
-    }
+    if (newPosition < weatherIconBottomMax) newPosition = weatherIconBottomMax;
+    if (newSize < weatherIconSizeMax) newSize = weatherIconSizeMax;
 
     setState(() {
       weatherIconBottom = newPosition;
@@ -216,10 +208,8 @@ class _WeatherScreen extends State<WeatherScreen> {
 
   // 控制底部位置
   controFooter() {
-    final RenderBox renderBoxA =
-        headerKey.currentContext?.findRenderObject() as RenderBox;
-    final RenderBox renderBoxB =
-        navBarKey.currentContext?.findRenderObject() as RenderBox;
+    final RenderBox renderBoxA = headerKey.currentContext?.findRenderObject() as RenderBox;
+    final RenderBox renderBoxB = navBarKey.currentContext?.findRenderObject() as RenderBox;
     final Size sizeA = renderBoxA.size;
     final Offset positionA = renderBoxA.localToGlobal(Offset.zero);
     final Rect rectA = positionA & sizeA;
@@ -227,9 +217,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     final Offset positionB = renderBoxB.localToGlobal(Offset.zero);
     final Rect rectB = positionB & sizeB;
     final bool overlapping = rectA.overlaps(rectB);
-    String direction = scrollviewController.offset < currentOffset
-        ? 'up'
-        : 'down';
+    String direction = scrollviewController.offset < currentOffset ? 'up' : 'down';
 
     setState(() {
       currentOffset = scrollviewController.offset;
@@ -293,10 +281,7 @@ class _WeatherScreen extends State<WeatherScreen> {
           child: AnimatedOpacity(
             opacity: headerBackgroundOpacity,
             duration: Duration(microseconds: 100),
-            child: Image(
-              image: AssetImage('assets/images/header.png'),
-              fit: BoxFit.cover,
-            ),
+            child: Image(image: AssetImage('assets/images/header.png'), fit: BoxFit.cover),
           ),
         ),
       );
@@ -350,10 +335,7 @@ class _WeatherScreen extends State<WeatherScreen> {
                 child: AnimatedDefaultTextStyle(
                   curve: Curves.easeInOut,
                   duration: Duration(milliseconds: 100),
-                  style: TextStyle(
-                    color: curTempColor,
-                    fontSize: curTempMaxFontSize,
-                  ),
+                  style: TextStyle(color: curTempColor, fontSize: curTempMaxFontSize),
                   child: (() {
                     if (weatherData == null) return Text('-°');
                     return Text('${weatherData!.temp}°');
@@ -363,10 +345,7 @@ class _WeatherScreen extends State<WeatherScreen> {
               AnimatedDefaultTextStyle(
                 curve: Curves.easeInOut,
                 duration: Duration(milliseconds: 100),
-                style: TextStyle(
-                  color: curTempColor,
-                  fontSize: feelsLikeFontSize,
-                ),
+                style: TextStyle(color: curTempColor, fontSize: feelsLikeFontSize),
                 child: Transform.translate(
                   offset: Offset(-10.0, 0.0),
                   child: (() {
@@ -393,11 +372,7 @@ class _WeatherScreen extends State<WeatherScreen> {
               duration: Duration(milliseconds: 400),
               child: (() {
                 if (weatherData == null) {
-                  return Icon(
-                    CupertinoIcons.rays,
-                    size: weatherIconSize,
-                    color: curTempColor,
-                  );
+                  return Icon(CupertinoIcons.rays, size: weatherIconSize, color: curTempColor);
                 }
 
                 String path = 'assets/weather/${weatherData!.icon}-fill.svg';
@@ -443,21 +418,12 @@ class _WeatherScreen extends State<WeatherScreen> {
           children: (() {
             if (weatherData == null) return [Text('')];
             return [
-              Text(
-                updateTime,
-                style: TextStyle(color: curTempColor, fontSize: 18),
-              ),
+              Text(updateTime, style: TextStyle(color: curTempColor, fontSize: 18)),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    'WindScale ${weatherData!.windScale}',
-                    style: TextStyle(color: curTempColor, fontSize: 18),
-                  ),
-                  Text(
-                    'WindSpeed ${weatherData!.windSpeed}',
-                    style: TextStyle(color: curTempColor, fontSize: 18),
-                  ),
+                  Text('WindScale ${weatherData!.windScale}', style: TextStyle(color: curTempColor, fontSize: 18)),
+                  Text('WindSpeed ${weatherData!.windSpeed}', style: TextStyle(color: curTempColor, fontSize: 18)),
                 ],
               ),
             ];
@@ -491,18 +457,46 @@ class _WeatherScreen extends State<WeatherScreen> {
           bottomRight: Radius.circular(footerRadius),
         ),
       ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          backgroundComponent(),
-          inputComponent(),
-          currentTempComponent(),
-          footerComponent(),
-          pageNavBarComponentWrap(),
-          currentWeatherComponent(),
-        ],
+      child: Opacity(
+        opacity: 1,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            backgroundComponent(),
+            inputComponent(),
+            currentTempComponent(),
+            footerComponent(),
+            pageNavBarComponentWrap(),
+            currentWeatherComponent(),
+          ],
+        ),
       ),
     );
+  }
+
+  // 4. 实现滚动函数
+  void scrollToKey(GlobalKey key) {
+    final BuildContext? context = key.currentContext;
+
+    if (context != null) {
+      // 获取目标组件的 RenderObject
+      final RenderObject? renderObject = context.findRenderObject();
+
+      if (renderObject is RenderBox) {
+        // 获取目标组件在 Scrollable 中的相对位置信息
+        final RenderAbstractViewport viewport = RenderAbstractViewport.of(renderObject);
+
+        // 计算需要滚动到的偏移量 (这里的 alignment 设为 0.0 表示滚动到顶部)
+        final revealedOffset = viewport.getOffsetToReveal(renderObject, 0.0);
+
+        // 使用 controller 滚动
+        scrollviewController.animateTo(
+          revealedOffset.offset,
+          duration: const Duration(milliseconds: 500), // 滚动时间
+          curve: Curves.easeInOut, // 滚动曲线
+        );
+      }
+    }
   }
 
   // 页面导航栏
@@ -528,40 +522,6 @@ class _WeatherScreen extends State<WeatherScreen> {
               ? Color.fromARGB(255, 45, 2, 76) // 选中时的文字颜色
               : Colors.black; // 未选中时的文字颜色
 
-          buttonTap(int index) {
-            if (index == 0) {
-              scrollviewController.animateTo(
-                0.0,
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeOut,
-              );
-            }
-            if (index == 1) {
-              final RenderBox? renderBox =
-                  dayForecastKey.currentContext?.findRenderObject()
-                      as RenderBox?;
-              final Offset position = renderBox!.localToGlobal(Offset.zero);
-              double value = double.parse(position.dy.toString());
-              scrollviewController.animateTo(
-                value - 40,
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeOut,
-              );
-            }
-
-            if (index == 2) {
-              final RenderBox? renderBox =
-                  daysKey.currentContext?.findRenderObject() as RenderBox?;
-              final Offset position = renderBox!.localToGlobal(Offset.zero);
-              double value = double.parse(position.dy.toString());
-              scrollviewController.animateTo(
-                value - 240,
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeOut,
-              );
-            }
-          }
-
           return Container(
             width: 116,
             color: Colors.transparent,
@@ -570,21 +530,24 @@ class _WeatherScreen extends State<WeatherScreen> {
                 setState(() {
                   if (item['index'] == pageNavBarIndex) return;
                   pageNavBarIndex = item['index'];
-                  buttonTap(pageNavBarIndex);
+                  if (pageNavBarIndex == 0) {
+                    scrollToKey(topKey);
+                  }
+                  if (pageNavBarIndex == 1) {
+                    scrollToKey(dayForecastKey);
+                  }
+                  if (pageNavBarIndex == 2) {
+                    scrollToKey(daysKey);
+                  }
                 });
               },
               style: TextButton.styleFrom(
                 backgroundColor: backgroundColor,
                 foregroundColor: foregroundColor,
                 minimumSize: Size.fromHeight(48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               ),
-              child: Text(
-                item['title'],
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              child: Text(item['title'], style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           );
         }).toList(),
@@ -602,37 +565,26 @@ class _WeatherScreen extends State<WeatherScreen> {
         slivers: [
           SliverPersistentHeader(
             pinned: true,
-            delegate: StickyHeaderDelegate(
-              minHeight: 228.0,
-              maxHeight: 412.0,
-              child: headerComponent(),
-            ),
+            delegate: StickyHeaderDelegate(minHeight: 228.0, maxHeight: 412.0, child: headerComponent()),
           ),
           SliverList(
             delegate: SliverChildListDelegate([
               Column(
                 children: [
-                  SizedBox(height: 16),
+                  SizedBox(height: 16, key: topKey),
                   pageNavBarComponent(),
                   SizedBox(height: 16, key: navBarKey),
                   DetailComponent(weatherData: weatherData),
+                  SizedBox(height: 16, key: dayForecastKey),
+                  Hourly(hourlyList: hourlyList ?? []),
                   SizedBox(height: 16),
-                  Hourly(
-                    hourlyList: hourlyList ?? [],
-                    keyValue: dayForecastKey,
-                  ),
-                  SizedBox(height: 16),
-                  CurveComponent(
-                    tempMax: dayTempMax,
-                    tempMin: dayTempMin,
-                    daysList: daysList,
-                  ),
+                  CurveComponent(tempMax: dayTempMax, tempMin: dayTempMin, daysList: daysList),
                   SizedBox(height: 16),
                   ChanceOfRain(hourlyList: hourlyList ?? []), // 降雨率
                   SizedBox(height: 16),
                   SunRiseAndSet(daysList: daysList), // 日出日落时间
-                  SizedBox(height: 16),
-                  Days(daysList: daysList, keyValue: daysKey),
+                  SizedBox(height: 16, key: daysKey),
+                  Days(daysList: daysList),
                   SizedBox(height: 100),
                 ],
               ),

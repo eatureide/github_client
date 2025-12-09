@@ -8,6 +8,7 @@ Map<String, String> weatherList = {
   '多云': 'Cloudy',
   '小雨': 'Rain',
   '雨夹雪': 'Sleet',
+  '小雪': 'Snow',
 };
 
 const Map<int, String> monthAbbreviationMap = {

@@ -7,8 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class Days extends StatefulWidget {
   final List<DayItem>? daysList;
-  final GlobalKey keyValue;
-  const Days({super.key, required this.daysList, required this.keyValue});
+  const Days({super.key, required this.daysList});
 
   @override
   State<Days> createState() => _Days();
@@ -22,10 +21,7 @@ class _Days extends State<Days> {
     return Container(
       height: 84,
       margin: EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
           SizedBox(width: 12),
@@ -37,13 +33,7 @@ class _Days extends State<Days> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '$month, ${date.day}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    Text('$month, ${date.day}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     Text('${item.tempMax}°', style: TextStyle(fontSize: 16)),
                   ],
                 ),
@@ -66,11 +56,7 @@ class _Days extends State<Days> {
             ),
           ),
           SizedBox(width: 10),
-          Container(
-            width: 2,
-            height: 46,
-            color: Color.fromARGB(255, 75, 69, 77),
-          ),
+          Container(width: 2, height: 46, color: Color.fromARGB(255, 75, 69, 77)),
           SizedBox(width: 12),
           SvgPicture.asset(path, width: 46, height: 46),
           SizedBox(width: 12),
@@ -88,7 +74,6 @@ class _Days extends State<Days> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 12),
       child: Column(
-        key: widget.keyValue,
         children: widget.daysList!.map((item) {
           return buildItem(item) as Widget;
         }).toList(),
