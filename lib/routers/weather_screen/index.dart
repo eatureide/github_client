@@ -474,8 +474,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     );
   }
 
-  // 4. 实现滚动函数
-  void scrollToKey(GlobalKey key) {
+  scrollToKey(GlobalKey key) {
     final BuildContext? context = key.currentContext;
 
     if (context != null) {
@@ -575,8 +574,9 @@ class _WeatherScreen extends State<WeatherScreen> {
                   pageNavBarComponent(),
                   SizedBox(height: 16, key: navBarKey),
                   DetailComponent(weatherData: weatherData),
-                  SizedBox(height: 16, key: dayForecastKey),
+                  SizedBox(height: 16),
                   Hourly(hourlyList: hourlyList ?? []),
+                  SizedBox(height: 1, key: dayForecastKey),
                   SizedBox(height: 16),
                   CurveComponent(tempMax: dayTempMax, tempMin: dayTempMin, daysList: daysList),
                   SizedBox(height: 16),
