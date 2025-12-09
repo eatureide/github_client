@@ -6,7 +6,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class Hourly extends StatefulWidget {
   final List<HourItem>? hourlyList;
-  const Hourly({super.key, required List<HourItem> this.hourlyList});
+  final GlobalKey keyValue;
+  const Hourly({
+    super.key,
+    required List<HourItem> this.hourlyList,
+    required this.keyValue,
+  });
 
   @override
   State<Hourly> createState() => _Hourly();
@@ -55,6 +60,7 @@ class _Hourly extends State<Hourly> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: widget.keyValue,
       padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
       child: Container(
         padding: EdgeInsets.fromLTRB(12, 12, 12, 12),

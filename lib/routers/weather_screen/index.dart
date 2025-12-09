@@ -3,51 +3,16 @@ import 'package:github_clint_app/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../component/curve.dart';
-import '../component/rain.dart';
-import '../component/sun.dart';
-import '../component/hourly.dart';
-import '../component/days.dart';
-import '../apis/weather.dart';
-import '../utils/index.dart';
-import '../models/weather.dart';
-
-// 继承自 SliverPersistentHeaderDelegate 的类，用于实现 Header 的布局和变化逻辑
-class StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  StickyHeaderDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  // 核心方法: 构建 Header 的实际内容
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return SizedBox.expand(child: child);
-  }
-
-  // 是否需要重新构建 Header。通常保持为 true 或在需要时进行更复杂的判断。
-  @override
-  bool shouldRebuild(StickyHeaderDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
-  }
-}
+import 'curve.dart';
+import '../../component/rain.dart';
+import '../../component/sun.dart';
+import '../../component/hourly.dart';
+import '../../component/days.dart';
+import '../../apis/weather.dart';
+import '../../utils/index.dart';
+import '../../models/weather.dart';
+import './helper.dart';
+import './detail_component.dart';
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
@@ -128,6 +93,8 @@ class _WeatherScreen extends State<WeatherScreen> {
 
   final GlobalKey headerKey = GlobalKey();
   final GlobalKey navBarKey = GlobalKey();
+  final GlobalKey dayForecastKey = GlobalKey();
+  final GlobalKey daysKey = GlobalKey();
 
   String dayTempMax = '';
   String dayTempMin = '';
@@ -193,7 +160,7 @@ class _WeatherScreen extends State<WeatherScreen> {
     setState(() {
       cityController.text = cityName;
       dayTempMax = getMaxTemp.tempMax;
-      dayTempMin = getMinTemp.tempMax;
+      dayTempMin = getMinTemp.tempMin;
       updateTime = dateStr;
       weatherData = now;
       hourlyList = hourly;
@@ -561,13 +528,49 @@ class _WeatherScreen extends State<WeatherScreen> {
               ? Color.fromARGB(255, 45, 2, 76) // 选中时的文字颜色
               : Colors.black; // 未选中时的文字颜色
 
+          buttonTap(int index) {
+            if (index == 0) {
+              scrollviewController.animateTo(
+                0.0,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOut,
+              );
+            }
+            if (index == 1) {
+              final RenderBox? renderBox =
+                  dayForecastKey.currentContext?.findRenderObject()
+                      as RenderBox?;
+              final Offset position = renderBox!.localToGlobal(Offset.zero);
+              double value = double.parse(position.dy.toString());
+              scrollviewController.animateTo(
+                value - 40,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOut,
+              );
+            }
+
+            if (index == 2) {
+              final RenderBox? renderBox =
+                  daysKey.currentContext?.findRenderObject() as RenderBox?;
+              final Offset position = renderBox!.localToGlobal(Offset.zero);
+              double value = double.parse(position.dy.toString());
+              scrollviewController.animateTo(
+                value - 240,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOut,
+              );
+            }
+          }
+
           return Container(
             width: 116,
             color: Colors.transparent,
             child: TextButton(
               onPressed: () {
                 setState(() {
+                  if (item['index'] == pageNavBarIndex) return;
                   pageNavBarIndex = item['index'];
+                  buttonTap(pageNavBarIndex);
                 });
               },
               style: TextButton.styleFrom(
@@ -585,155 +588,6 @@ class _WeatherScreen extends State<WeatherScreen> {
             ),
           );
         }).toList(),
-      ),
-    );
-  }
-
-  // 天气详情卡片小组件
-  detailComponent() {
-    buildDetailCard({
-      required IconData icon,
-      required String title,
-      String value = '',
-    }) {
-      return Container(
-        // width: 186,
-        height: 76,
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: Center(child: Icon(icon)),
-              ),
-              SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(title),
-                  Text(value, style: TextStyle(fontSize: 16)),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                flex: 1,
-                child: buildDetailCard(
-                  icon: CupertinoIcons.wind,
-                  title: 'Wind Speed',
-                  value: (() {
-                    if (weatherData == null) return '';
-                    return '${weatherData!.windSpeed} km/h';
-                  })(),
-                ),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                flex: 1,
-                child: buildDetailCard(
-                  icon: CupertinoIcons.cloud_rain,
-                  title: 'Precipitation',
-                  value: (() {
-                    if (weatherData == null) return '';
-                    return '${weatherData!.precip} mm/h';
-                  })(),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                flex: 1,
-                child: buildDetailCard(
-                  icon: CupertinoIcons.text_justifyleft,
-                  title: 'Pressure',
-                  value: (() {
-                    if (weatherData == null) return '';
-                    return '${weatherData!.pressure} hpa';
-                  })(),
-                ),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                flex: 1,
-                child: buildDetailCard(
-                  icon: CupertinoIcons.drop,
-                  title: 'Humidity',
-                  value: (() {
-                    if (weatherData == null) return '';
-                    return '${weatherData!.humidity} %';
-                  })(),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 温度走势图
-  weatherCurveComponent() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        padding: EdgeInsets.fromLTRB(12, 12, 24, 0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  margin: EdgeInsets.only(right: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Icon(CupertinoIcons.calendar, size: 14),
-                ),
-                Text('Day forecast', style: TextStyle(fontSize: 14)),
-              ],
-            ),
-            daysList == null
-                ? Text('')
-                : CurveComponent(
-                    tempMax: dayTempMax,
-                    tempMin: dayTempMin,
-                    daysList: daysList,
-                  ),
-          ],
-        ),
       ),
     );
   }
@@ -761,17 +615,24 @@ class _WeatherScreen extends State<WeatherScreen> {
                   SizedBox(height: 16),
                   pageNavBarComponent(),
                   SizedBox(height: 16, key: navBarKey),
-                  detailComponent(),
+                  DetailComponent(weatherData: weatherData),
                   SizedBox(height: 16),
-                  Hourly(hourlyList: hourlyList ?? []),
+                  Hourly(
+                    hourlyList: hourlyList ?? [],
+                    keyValue: dayForecastKey,
+                  ),
                   SizedBox(height: 16),
-                  weatherCurveComponent(),
+                  CurveComponent(
+                    tempMax: dayTempMax,
+                    tempMin: dayTempMin,
+                    daysList: daysList,
+                  ),
                   SizedBox(height: 16),
                   ChanceOfRain(hourlyList: hourlyList ?? []), // 降雨率
                   SizedBox(height: 16),
                   SunRiseAndSet(daysList: daysList), // 日出日落时间
                   SizedBox(height: 16),
-                  Days(daysList: daysList),
+                  Days(daysList: daysList, keyValue: daysKey),
                   SizedBox(height: 100),
                 ],
               ),

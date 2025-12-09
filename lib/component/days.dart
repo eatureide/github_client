@@ -7,7 +7,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class Days extends StatefulWidget {
   final List<DayItem>? daysList;
-  const Days({super.key, required this.daysList});
+  final GlobalKey keyValue;
+  const Days({super.key, required this.daysList, required this.keyValue});
 
   @override
   State<Days> createState() => _Days();
@@ -51,7 +52,7 @@ class _Days extends State<Days> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                     '${weatherList[item.textDay]??item.textDay}',
+                      '${weatherList[item.textDay] ?? item.textDay}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -83,10 +84,11 @@ class _Days extends State<Days> {
     if (widget.daysList == null) {
       return Text('');
     }
-    print(widget.daysList);
+    // print(widget.daysList);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 12),
       child: Column(
+        key: widget.keyValue,
         children: widget.daysList!.map((item) {
           return buildItem(item) as Widget;
         }).toList(),

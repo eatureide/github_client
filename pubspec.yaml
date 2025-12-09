@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  collection: ^1.18.0 # 使用最新版本
   flutter_svg: ^2.0.10 # 请使用当前最新的版本号
   path_provider: ^2.1.1 # 使用当前最新版本
   fl_chart: ^0.67.0 # 請使用最新版本

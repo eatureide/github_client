@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:github_clint_app/routers/home_screen.dart';
-import 'package:github_clint_app/routers/weather_screen.dart';
+import 'package:github_clint_app/routers/weather_screen/index.dart';
 import 'theme.dart';
 import 'routers/sticky_screen.dart';
 

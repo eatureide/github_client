@@ -42,7 +42,7 @@ class WeatherModel extends ChangeNotifier {
   getDailyWeather(GeocodeItem item) async {
     String dailyUrl =
         'https://api.openweathermap.org/data/2.5/onecall?lat=${item.latitude}&lon=${item.longitude}&units=metric&exclude=minutely,current&appid=$weatherKey';
-    print(dailyUrl);
+    // print(dailyUrl);
 
     final response = await dio.get(
       'https://api.openweathermap.org/data/2.5/onecall',
